@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import type { RolUsuario } from "../models/usuario.js";
 import { HttpError } from "../utils/httpError.js";
 
+// Sesion del personal del hotel (panel)
 export interface UsuarioToken {
   id_usuario: number;
   nombre: string;
@@ -11,10 +12,19 @@ export interface UsuarioToken {
   rol: RolUsuario;
 }
 
+// Sesion de un cliente (portal)
+export interface ClienteToken {
+  id_cuenta: number;
+  id_propietario: number;
+  nombre: string;
+  correo: string;
+}
+
 declare global {
   namespace Express {
     interface Request {
       usuario?: UsuarioToken;
+      cliente?: ClienteToken;
     }
   }
 }
@@ -25,32 +35,62 @@ function secreto(): string {
   return valor;
 }
 
+const opciones = () => ({
+  expiresIn: (process.env.JWT_EXPIRES_IN || "8h") as jwt.SignOptions["expiresIn"],
+});
+
+// El campo "tipo" distingue los tokens del personal y de los clientes
 export function firmarToken(usuario: UsuarioToken): string {
-  return jwt.sign(usuario, secreto(), {
-    expiresIn: (process.env.JWT_EXPIRES_IN || "8h") as jwt.SignOptions["expiresIn"],
-  });
+  return jwt.sign({ ...usuario, tipo: "personal" }, secreto(), opciones());
 }
 
-export function requerirAuth(req: Request, _res: Response, next: NextFunction) {
+export function firmarTokenCliente(cliente: ClienteToken): string {
+  return jwt.sign({ ...cliente, tipo: "cliente" }, secreto(), opciones());
+}
+
+function leerToken(req: Request): Record<string, unknown> {
   const [tipo, token] = (req.headers.authorization || "").split(" ");
   if (tipo !== "Bearer" || !token) {
     throw new HttpError(401, "Debe iniciar sesion");
   }
-
   try {
-    const datos = jwt.verify(token, secreto()) as UsuarioToken;
-    req.usuario = {
-      id_usuario: datos.id_usuario,
-      nombre: datos.nombre,
-      correo: datos.correo,
-      rol: datos.rol,
-    };
+    return jwt.verify(token, secreto()) as Record<string, unknown>;
   } catch {
     throw new HttpError(401, "Sesion invalida o expirada");
   }
+}
+
+// Exige una sesion del personal del hotel
+export function requerirAuth(req: Request, _res: Response, next: NextFunction) {
+  const datos = leerToken(req);
+  if (datos.tipo === "cliente") {
+    throw new HttpError(403, "Esta seccion es solo para el personal del hotel");
+  }
+  req.usuario = {
+    id_usuario: datos.id_usuario as number,
+    nombre: datos.nombre as string,
+    correo: datos.correo as string,
+    rol: datos.rol as RolUsuario,
+  };
   next();
 }
 
+// Exige una sesion de cliente (portal)
+export function requerirCliente(req: Request, _res: Response, next: NextFunction) {
+  const datos = leerToken(req);
+  if (datos.tipo !== "cliente") {
+    throw new HttpError(403, "Inicia sesion con tu cuenta de cliente");
+  }
+  req.cliente = {
+    id_cuenta: datos.id_cuenta as number,
+    id_propietario: datos.id_propietario as number,
+    nombre: datos.nombre as string,
+    correo: datos.correo as string,
+  };
+  next();
+}
+
+// Exige que el usuario autenticado tenga alguno de los roles indicados
 export function requerirRol(...roles: RolUsuario[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.usuario || !roles.includes(req.usuario.rol)) {

@@ -123,3 +123,7 @@ h3 {
     transition: none !important;
   }
 }
+
+.flecha-atras {
+  transform: rotate(180deg);
+}

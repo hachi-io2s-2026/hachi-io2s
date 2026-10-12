@@ -100,6 +100,54 @@ export const IconoSalir = (p: P) => (
   </svg>
 )
 
+export const IconoAlerta = (p: P) => (
+  <svg {...base} {...p}>
+    <path d="M12 3l9.5 17h-19z" />
+    <path d="M12 10v4M12 17.5v.01" />
+  </svg>
+)
+
+export const IconoInfo = (p: P) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 11v5M12 7.5v.01" />
+  </svg>
+)
+
+export const IconoBuscar = (p: P) => (
+  <svg {...base} {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-4-4" />
+  </svg>
+)
+
+export const IconoMas = (p: P) => (
+  <svg {...base} {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+)
+
+export const IconoEntrar = (p: P) => (
+  <svg {...base} {...p}>
+    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" />
+  </svg>
+)
+
+export const IconoHuella = (p: P) => (
+  <svg {...base} {...p}>
+    <circle cx="7" cy="9" r="1.8" />
+    <circle cx="12" cy="6.5" r="1.8" />
+    <circle cx="17" cy="9" r="1.8" />
+    <path d="M12 12c-3 0-5.5 3.2-5.5 5.4 0 1.5 1.1 2.1 2.4 2.1 1.2 0 1.9-.7 3.1-.7s1.9.7 3.1.7c1.3 0 2.4-.6 2.4-2.1 0-2.2-2.5-5.4-5.5-5.4z" />
+  </svg>
+)
+
+export const IconoActualizar = (p: P) => (
+  <svg {...base} {...p}>
+    <path d="M20 11a8 8 0 0 0-14.9-4M4 4v4h4M4 13a8 8 0 0 0 14.9 4M20 20v-4h-4" />
+  </svg>
+)
+
 export const IconoMenu = (p: P) => (
   <svg {...base} {...p}>
     <path d="M4 7h16M4 12h16M4 17h16" />

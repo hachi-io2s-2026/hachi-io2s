@@ -8,7 +8,7 @@ import { hoy } from "../utils/fechas.js";
 import { HttpError, noEncontrado } from "../utils/httpError.js";
 import { dia, id, idParams, textoOpcional, textoRequerido } from "../utils/validacion.js";
 
-const mascotaSchema = z.object({
+export const mascotaSchema = z.object({
   id_propietario: id,
   nombre: textoRequerido(100),
   raza: textoOpcional(100),

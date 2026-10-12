@@ -1,0 +1,621 @@
+/* ---------- Encabezado ---------- */
+.hoy-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.hoy-actualizar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--texto-suave);
+  background: #fff;
+  cursor: pointer;
+}
+
+.hoy-actualizar:hover {
+  border-color: var(--verde);
+  color: var(--verde);
+}
+
+/* Linea de ayuda bajo el titulo de cada bloque */
+.caja-encabezado-ayuda {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+.caja-encabezado-ayuda > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.caja-encabezado-ayuda > span {
+  flex: none;
+}
+
+.caja-ayuda {
+  margin: 3px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--texto-suave);
+}
+
+/* ---------- Indicadores ---------- */
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.indicador {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--linea);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.indicador > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.indicador-enlace:hover {
+  border-color: var(--verde);
+  box-shadow: 0 14px 28px -22px rgba(21, 99, 82, 0.8);
+  transform: translateY(-2px);
+}
+
+.indicador-titulo {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.indicador-icono {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+}
+
+.indicador-verde {
+  color: #0f5a48;
+  background: #d6eee4;
+}
+
+.indicador-ambar {
+  color: #9a5300;
+  background: #fde9c8;
+}
+
+.indicador-azul {
+  color: #1d4f91;
+  background: #dde9fa;
+}
+
+.indicador strong {
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: var(--negro);
+}
+
+.indicador small {
+  overflow: hidden;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--texto-suave);
+}
+
+.indicador-ocupacion {
+  justify-content: space-between;
+}
+
+.anillo {
+  flex: none;
+  transform: rotate(-90deg);
+}
+
+.anillo circle {
+  fill: none;
+  stroke-width: 8;
+}
+
+.anillo-fondo {
+  stroke: var(--gris-boton);
+}
+
+.anillo-valor {
+  stroke: var(--verde);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.anillo-lleno .anillo-valor {
+  stroke: #d9822b;
+}
+
+/* ---------- Columnas ---------- */
+.hoy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    'entradas salidas'
+    'entradas lateral';
+  align-items: start;
+  gap: 16px;
+}
+
+.hoy-entradas {
+  grid-area: entradas;
+}
+
+.hoy-salidas {
+  grid-area: salidas;
+}
+
+.hoy-lateral {
+  display: grid;
+  grid-area: lateral;
+  gap: 16px;
+}
+
+/* Pantallas anchas: entradas, salidas y columna lateral lado a lado */
+@media (min-width: 1440px) {
+  .hoy-grid {
+    grid-template-columns: 1.15fr 1fr 0.9fr;
+    grid-template-areas: 'entradas salidas lateral';
+  }
+}
+
+.estado-lista {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #0f5a48;
+  background: var(--verde-tinte);
+}
+
+.estado-lista.con-pendientes {
+  color: #8a4b00;
+  background: #fff0d6;
+}
+
+.texto-pendiente {
+  font-weight: 700;
+  color: #b05e00;
+}
+
+.lista-vacia {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 30px 20px;
+  color: #b6bdb8;
+}
+
+.lista-vacia p {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--texto-suave);
+}
+
+.lista-vacia-simple {
+  margin: 0;
+  padding: 18px 20px;
+}
+
+/* ---------- Agenda (entradas / salidas) ---------- */
+.movimientos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.movimientos li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px 12px 16px;
+  border-bottom: 1px solid var(--linea);
+  transition: background 0.15s;
+}
+
+.movimientos li:hover {
+  background: #fafbfa;
+}
+
+.movimientos li:last-child {
+  border-bottom: none;
+}
+
+/* Marca a la izquierda de lo pendiente */
+.movimientos li.pendiente::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #f0a63a;
+}
+
+.movimiento-hora {
+  flex: none;
+  width: 46px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--negro);
+}
+
+/* Lo ya registrado se ve mas tenue para que resalte lo pendiente */
+.movimientos li.hecho .movimiento-hora,
+.movimientos li.hecho .avatar,
+.movimientos li.hecho .movimiento-texto {
+  opacity: 0.55;
+}
+
+.movimiento-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.movimiento-texto p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 6px;
+  margin: 0;
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: var(--negro);
+}
+
+.movimiento-texto p a {
+  color: var(--negro) !important;
+  text-decoration: none;
+}
+
+.movimiento-texto p a:hover {
+  color: var(--verde) !important;
+  text-decoration: underline;
+}
+
+/* La linea de datos puede pasar a dos renglones: el saldo pendiente siempre se ve completo */
+.movimiento-texto > span {
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--texto-suave);
+}
+
+.chip-servicio {
+  padding: 1px 7px;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.chip-hotel {
+  color: #4b3a8f;
+  background: #ece7fb;
+}
+
+.chip-daycare {
+  color: #8a5300;
+  background: #fff0d6;
+}
+
+/* ---------- Alertas ---------- */
+.alertas {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alerta {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.alerta svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.alerta-alerta {
+  color: #7a4300;
+  background: #fff3df;
+}
+
+.alerta-info {
+  color: #1d3f73;
+  background: #e8f0fb;
+}
+
+.alerta a {
+  color: inherit !important;
+  font-weight: 800 !important;
+}
+
+/* ---------- Proximas llegadas ---------- */
+.proximas {
+  padding: 6px 0 10px;
+}
+
+.proximas-dia + .proximas-dia {
+  border-top: 1px dashed var(--linea);
+}
+
+.proximas-fecha {
+  margin: 10px 20px 4px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--verde);
+}
+
+.proximas ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.proximas li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 20px;
+}
+
+.proximas-texto {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  font-weight: 400 !important;
+  text-decoration: none;
+}
+
+.proximas-texto strong {
+  font-size: 0.88rem;
+  color: var(--negro);
+}
+
+.proximas-texto span {
+  overflow: hidden;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--texto-suave);
+}
+
+.proximas-texto:hover strong {
+  color: var(--verde);
+}
+
+/* ---------- Esqueleto de carga ---------- */
+.esqueleto {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eef0ed 25%, #f7f8f6 50%, #eef0ed 75%);
+  background-size: 200% 100%;
+  animation: brillo 1.2s ease-in-out infinite;
+}
+
+.esqueleto-linea {
+  width: 70%;
+  height: 12px;
+}
+
+.esqueleto-numero {
+  width: 40%;
+  height: 26px;
+  margin-top: 8px;
+}
+
+.esqueleto-avatar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+.esqueleto-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.esqueleto-fila:last-child {
+  border-bottom: none;
+}
+
+@keyframes brillo {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- Tamanos ---------- */
+@media (max-width: 1200px) {
+  .indicadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .hoy-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'entradas'
+      'salidas'
+      'lateral';
+  }
+
+}
+
+@media (max-width: 560px) {
+  .indicadores {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+
+  .movimientos li {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+  }
+
+  /* La hora y el texto ocupan la fila; el boton baja a la siguiente */
+  .movimiento-texto {
+    flex: 1 1 calc(100% - 110px);
+  }
+
+  .movimiento-texto > span {
+    white-space: normal;
+  }
+
+  .movimientos li .boton,
+  .movimientos li .insignia-estado {
+    margin-left: 106px;
+  }
+}
+
+/* ---------- Registradas agrupadas ---------- */
+.ver-hechos {
+  display: block;
+  width: 100%;
+  padding: 11px 20px;
+  border: none;
+  border-top: 1px solid var(--linea);
+  border-radius: 0 0 14px 14px;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--verde);
+  background: #fafbfa;
+  cursor: pointer;
+}
+
+.ver-hechos:hover {
+  background: var(--verde-tinte);
+}
+
+.lista-al-dia {
+  padding: 22px 20px;
+  color: #9fcdb9;
+}
+
+/* Telefono: indicadores de dos en dos, con el icono arriba */
+@media (max-width: 560px) {
+  .indicadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .indicador {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 14px;
+  }
+
+  .indicador-icono {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .indicador-ocupacion .anillo {
+    display: none;
+  }
+
+  .indicador small {
+    white-space: normal;
+  }
+}
+
+/* ---------- Por confirmar ---------- */
+.confirmar-lista {
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+}
+
+.confirmar-lista li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+}
+
+.confirmar-texto {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  font-weight: 400 !important;
+  text-decoration: none;
+}
+
+.confirmar-texto strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--negro);
+}
+
+.confirmar-texto span {
+  overflow: hidden;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--texto-suave);
+}
+
+.confirmar-texto:hover strong {
+  color: var(--verde);
+}
+
+
+.ver-todas {
+  text-align: center;
+  text-decoration: none;
+}

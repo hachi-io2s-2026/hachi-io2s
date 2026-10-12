@@ -1,0 +1,346 @@
+/* ---------- Nueva reservacion ---------- */
+.reserva-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  align-items: start;
+  gap: 18px;
+}
+
+.reserva-pasos {
+  display: grid;
+  gap: 16px;
+}
+
+.caja-encabezado h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paso-num {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--verde);
+}
+
+.seleccion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--verde);
+  border-radius: 10px;
+  background: #f4faf7;
+}
+
+.seleccion-nota {
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.resultados {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resultados button {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--linea);
+  border-radius: 9px;
+  font: inherit;
+  text-align: left;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.resultados button:hover {
+  border-color: var(--verde);
+  background: #f7faf8;
+}
+
+.resultados strong {
+  color: var(--negro);
+}
+
+.resultados span {
+  font-size: 0.84rem;
+  color: var(--texto-suave);
+}
+
+.resultado-vacio {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+}
+
+.opciones-servicio {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.opcion-servicio {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1.5px solid var(--linea);
+  border-radius: 11px;
+  font: inherit;
+  text-align: left;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.opcion-servicio:hover {
+  border-color: #b9c4bd;
+}
+
+.opcion-servicio.activa {
+  border-color: var(--verde);
+  background: #f4faf7;
+}
+
+.opcion-icono {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  color: var(--verde);
+  background: var(--verde-tinte);
+}
+
+.reserva-resumen {
+  position: sticky;
+  top: 20px;
+}
+
+.resumen-lineas {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+}
+
+.resumen-lineas div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.resumen-lineas dt {
+  color: var(--texto-suave);
+}
+
+.resumen-lineas dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+  color: var(--negro);
+}
+
+.resumen-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 14px 0 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--linea);
+}
+
+.resumen-total span {
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.resumen-total strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--negro);
+}
+
+.resumen-total.pendiente strong {
+  color: #a1281b;
+}
+
+.cupos-titulo {
+  margin: 4px 0 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.cupos {
+  display: grid;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.cupos li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 0.84rem;
+  background: var(--gris-fondo);
+}
+
+.cupos li.sin-cupo {
+  font-weight: 700;
+  color: #a1281b;
+  background: #fdecea;
+}
+
+.resumen-boton {
+  width: 100%;
+  height: 46px;
+  margin-top: 4px;
+}
+
+/* ---------- Detalle ---------- */
+.titulo-con-estado {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.titulo-con-estado .insignia-estado {
+  font-size: 0.8rem;
+  letter-spacing: 0;
+}
+
+.detalle-grid {
+  display: grid;
+  grid-template-columns: 1fr 330px;
+  align-items: start;
+  gap: 18px;
+}
+
+.detalle-principal {
+  display: grid;
+  gap: 16px;
+}
+
+.detalle-observaciones {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--linea);
+  font-size: 0.9rem;
+  color: #30363c;
+}
+
+.acciones-bloque {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.acciones-bloque:empty {
+  display: none;
+}
+
+.detalle-pagos {
+  position: sticky;
+  top: 20px;
+}
+
+.form-pago {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.lista-pagos {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-pagos li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--gris-fondo);
+}
+
+.lista-pagos li.anulado strong {
+  text-decoration: line-through;
+  color: var(--texto-suave);
+}
+
+@media (max-width: 1080px) {
+  .reserva-grid,
+  .detalle-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reserva-resumen,
+  .detalle-pagos {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .opciones-servicio {
+    grid-template-columns: 1fr;
+  }
+
+  .seleccion {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Las columnas de grid no se encogen bajo el ancho de su contenido sin min-width: 0
+   (evita que las tablas desborden la pantalla en telefono) */
+.reserva-grid > *,
+.reserva-pasos > *,
+.detalle-grid > *,
+.detalle-principal > * {
+  min-width: 0;
+}
+
+/* Portal: eleccion entre los perros del cliente */
+.opciones-perro {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.nota-solicitud {
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
