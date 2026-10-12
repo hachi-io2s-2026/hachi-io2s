@@ -13,6 +13,8 @@ import * as tarifas from "../controllers/tarifas.js";
 import * as usuarios from "../controllers/usuarios.js";
 import { requerirAuth, requerirRol } from "../middlewares/auth.js";
 
+import reportes from "./reportes.routes.js";
+
 const router = Router();
 const soloAdmin = requerirRol("ADMIN");
 
@@ -23,6 +25,7 @@ router.get("/servicios", servicios.listar);
 
 // Todo lo siguiente requiere sesion iniciada
 router.use(requerirAuth);
+router.use("/reportes", reportes);
 
 router.get("/auth/me", auth.perfil);
 

@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "crear-admin": "tsx src/scripts/crearAdmin.ts"
+    "crear-admin": "tsx src/scripts/crearAdmin.ts",
+    "test": "tsx --test tests/*.test.ts"
   },
   "keywords": [],
   "author": "",
