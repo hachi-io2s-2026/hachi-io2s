@@ -209,3 +209,10 @@ git pull --ff-only origin main
 ```
 
 Crear una **nueva rama** para la siguiente tarea. Las ramas pueden borrarse tras integrarlas si ya no son necesarias.
+
+
+## 9. Suite de reportes financieros y operativos
+
+Abrir **Reportes** en el panel autenticado. Incluye finanzas/cobranza, ocupación, programación lineal, CPM/PERT, cumplimiento y ABC/Pareto. Ejecutar `database/03_seed_reportes.sql` después de los scripts 01 y 02 para cargar 60 reservas sintéticas complementarias. Requiere MySQL 8.0+.
+
+Ver [instalación, fórmulas, supuestos y pruebas](docs/REPORTES.md) y [plantilla de Pull Request](docs/PR_REPORTES.md). Los costos y tiempos por actividad son supuestos explícitos; el esquema no almacena gastos ni tiempos A–F.
