@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import type { Rol } from '../auth/contexto'
+import type { ReactNode } from "react";
+import type { Rol } from "../auth/contexto";
 import {
   IconoAjustes,
   IconoCalendario,
@@ -7,7 +7,7 @@ import {
   IconoLuna,
   IconoSol,
   IconoUsuarios,
-} from '../components/Iconos'
+} from "../components/Iconos";
 
 export interface Modulo {
   ruta: string
@@ -26,36 +26,43 @@ export const MODULOS: Modulo[] = [
     icono: <IconoInicio width={19} height={19} />,
   },
   {
-    ruta: '/panel/reservaciones',
-    titulo: 'Reservaciones',
-    descripcion: 'Crear, cotizar, confirmar y cancelar reservas.',
+    ruta: "/panel/reservaciones",
+    titulo: "Reservaciones",
+    descripcion: "Crear, cotizar, confirmar y cancelar reservas.",
     icono: <IconoCalendario width={19} height={19} />,
   },
   {
-    ruta: '/panel/hospedaje',
-    titulo: 'Hospedaje',
-    descripcion: 'Registrar ingresos (check-in) y salidas (check-out).',
+    ruta: "/panel/hospedaje",
+    titulo: "Hospedaje",
+    descripcion: "Registrar ingresos (check-in) y salidas (check-out).",
     icono: <IconoLuna width={19} height={19} />,
   },
   {
-    ruta: '/panel/daycare',
-    titulo: 'Daycare',
-    descripcion: 'Control de asistencia diaria.',
+    ruta: "/panel/daycare",
+    titulo: "Daycare",
+    descripcion: "Control de asistencia diaria.",
     icono: <IconoSol width={19} height={19} />,
   },
   {
-    ruta: '/panel/propietarios',
-    titulo: 'Dueños y perros',
-    descripcion: 'Registro de dueños y fichas de sus perros.',
+    ruta: "/panel/propietarios",
+    titulo: "Dueños y perros",
+    descripcion: "Registro de dueños y fichas de sus perros.",
     icono: <IconoUsuarios width={19} height={19} />,
   },
   {
-    ruta: '/panel/configuracion',
-    titulo: 'Configuración',
-    descripcion: 'Tarifas, capacidad y usuarios del sistema.',
+    ruta: "/panel/reportes",
+    titulo: "Reportes",
+    descripcion: "Finanzas, capacidad y optimización de operaciones.",
+    icono: <IconoCalendario width={19} height={19} />,
+  },
+  {
+    ruta: "/panel/configuracion",
+    titulo: "Configuración",
+    descripcion: "Tarifas, capacidad y usuarios del sistema.",
     icono: <IconoAjustes width={19} height={19} />,
     roles: ['ADMIN'],
   },
-]
+];
 
-export const puedeVer = (m: Modulo, rol: Rol) => !m.roles || m.roles.includes(rol)
+export const puedeVer = (m: Modulo, rol: Rol) =>
+  !m.roles || m.roles.includes(rol);

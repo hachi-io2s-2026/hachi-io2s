@@ -28,8 +28,8 @@ function PaginaPublica() {
   const navegar = useNavigate()
 
   useEffect(() => {
-    document.title = 'HACHI · Hotel canino'
-  }, [])
+    document.title = "HACHI · Hotel canino";
+  }, []);
 
   // Con sesion iniciada, los botones llevan a su espacio: el panel (personal) o la cuenta (cliente)
   const entrar = () => navegar(usuario ? '/panel' : cliente ? '/mi-cuenta' : '/login')
@@ -40,7 +40,7 @@ function PaginaPublica() {
       <Navbar onIniciarSesion={entrar} textoBoton={texto} />
       <Inicio onIniciarSesion={entrar} />
     </>
-  )
+  );
 }
 
 function App() {
@@ -87,7 +87,7 @@ function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;
