@@ -155,4 +155,23 @@ CREATE TABLE IF NOT EXISTS pagos (
     INDEX idx_pago_estado (estado)
 );
 
+CREATE TABLE capacidades (
+    id_capacidad INT AUTO_INCREMENT PRIMARY KEY,
+    id_servicio INT NOT NULL,
+    capacidad_maxima INT NOT NULL,
+    fecha_inicio_vigencia DATE NOT NULL,
+    fecha_fin_vigencia DATE NULL,
 
+    CONSTRAINT fk_capacidad_servicio
+        FOREIGN KEY (id_servicio)
+        REFERENCES servicios(id_servicio),
+
+    CONSTRAINT chk_capacidad_positiva
+        CHECK (capacidad_maxima > 0),
+
+    CONSTRAINT chk_vigencia_capacidad
+        CHECK (
+            fecha_fin_vigencia IS NULL
+            OR fecha_fin_vigencia >= fecha_inicio_vigencia
+        )
+);
