@@ -11,12 +11,12 @@ export interface Reservacion {
   id_mascota: number;
   id_servicio: number;
   id_tarifa: number;
-  fecha_inicio: Date;
-  fecha_fin: Date;
+  fecha_inicio: string;
+  fecha_fin: string;
   monto_total: number;
   estado: EstadoReservacion;
   observaciones: string | null;
-  fecha_creacion: Date;
+  fecha_creacion: string;
 }
 
 // id_tarifa y monto_total los calcula el backend con la tarifa vigente;

@@ -10,6 +10,19 @@ export const pool = mysql.createPool({
   database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
+  // Devolver DECIMAL como number (por defecto mysql2 los devuelve como string)
+  decimalNumbers: true,
+  // Devolver DATE/DATETIME como texto ("2026-10-12 14:00:00") para evitar
+  // corrimientos de zona horaria entre MySQL, Node y el navegador
+  dateStrings: true,
+  // Devolver BOOLEAN (TINYINT(1)) como true/false en lugar de 1/0
+  typeCast: (field, next) => {
+    if (field.type === "TINY" && field.length === 1) {
+      const valor = field.string();
+      return valor === null ? null : valor === "1";
+    }
+    return next();
+  },
 });
 
 // para probar la conexion a la base de datos

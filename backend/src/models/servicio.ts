@@ -7,7 +7,7 @@ export interface Servicio {
   descripcion: string | null;
   tipo: TipoServicio;
   activo: boolean;
-  fecha_creacion: Date;
+  fecha_creacion: string;
 }
 
 export interface CrearServicio {

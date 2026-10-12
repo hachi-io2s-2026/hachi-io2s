@@ -8,7 +8,7 @@ export interface Usuario {
   password_hash: string;
   rol: RolUsuario;
   activo: boolean;
-  fecha_creacion: Date;
+  fecha_creacion: string;
 }
 
 export interface CrearUsuario {

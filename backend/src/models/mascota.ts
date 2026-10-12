@@ -7,11 +7,11 @@ export interface Mascota {
   nombre: string;
   raza: string | null;
   sexo: SexoMascota | null;
-  fecha_nacimiento: Date | null;
+  fecha_nacimiento: string | null;
   peso_kg: number | null;
   observaciones: string | null;
   activo: boolean;
-  fecha_registro: Date;
+  fecha_registro: string;
 }
 
 export interface CrearMascota {

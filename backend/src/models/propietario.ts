@@ -5,7 +5,7 @@ export interface Propietario {
   telefono: string;
   correo: string | null;
   direccion: string | null;
-  fecha_registro: Date;
+  fecha_registro: string;
 }
 
 export interface CrearPropietario {
