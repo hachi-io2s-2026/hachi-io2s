@@ -1,13 +1,15 @@
 
 import express from "express";
 import cors from "cors";
+import { manejarErrores, rutaNoEncontrada } from "./middlewares/errorHandler.js";
+import router from "./routes/index.js";
 
 const app = express();
 
 // Permitir solicitudes del frontend local
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
   })
 );
 
@@ -21,5 +23,11 @@ app.get("/api/health", (_req, res) => {
     message: "API de HACHI funcionando correctamente",
   });
 });
+
+app.use("/api", router);
+
+// Rutas inexistentes y manejo de errores
+app.use(rutaNoEncontrada);
+app.use(manejarErrores);
 
 export default app;

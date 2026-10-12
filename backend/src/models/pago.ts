@@ -15,9 +15,9 @@ export interface Pago {
   monto: number;
   metodo_pago: MetodoPago | null;
   estado: EstadoPago;
-  fecha_pago: Date | null;
+  fecha_pago: string | null;
   observaciones: string | null;
-  fecha_creacion: Date;
+  fecha_creacion: string;
 }
 
 export interface CrearPago {

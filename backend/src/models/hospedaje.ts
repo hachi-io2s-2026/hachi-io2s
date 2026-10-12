@@ -7,8 +7,8 @@ export type EstadoHospedaje =
 export interface Hospedaje {
   id_hospedaje: number;
   id_reservacion: number;
-  fecha_entrada: Date | null;
-  fecha_salida: Date | null;
+  fecha_entrada: string | null;
+  fecha_salida: string | null;
   estado: EstadoHospedaje;
   observaciones: string | null;
 }

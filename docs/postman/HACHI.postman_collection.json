@@ -1,0 +1,1980 @@
+{
+  "info": {
+    "name": "HACHI API",
+    "description": "API del sistema HACHI (hotel canino).\n\n**Cómo usar:**\n1. Importa también el entorno `HACHI Local` y selecciónalo.\n2. Pon tu correo y contraseña de admin en las variables `correo` y `password` del entorno.\n3. Ejecuta `Sesión > Login`: el token se guarda solo y lo usan todas las demás peticiones.\n4. Las peticiones de creación guardan los IDs (`id_propietario`, `id_mascota`, `id_reservacion`, etc.) para que las siguientes funcionen sin copiar nada.\n\nLas variables `hoy`, `manana`, `en3dias`, etc. se calculan solas antes de cada petición.\n\nPara probar todo el flujo de una vez: clic derecho en la colección > **Run collection**.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fechas relativas a hoy en formato YYYY-MM-DD",
+          "const dia = (n) => { const d = new Date(); d.setDate(d.getDate() + n);",
+          "  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };",
+          "pm.collectionVariables.set('hoy', dia(0));",
+          "pm.collectionVariables.set('manana', dia(1));",
+          "pm.collectionVariables.set('en3dias', dia(3));",
+          "pm.collectionVariables.set('en7dias', dia(7));",
+          "pm.collectionVariables.set('en9dias', dia(9));",
+          "pm.collectionVariables.set('en30dias', dia(30));"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "id_propietario",
+      "value": ""
+    },
+    {
+      "key": "id_mascota",
+      "value": ""
+    },
+    {
+      "key": "id_reservacion",
+      "value": ""
+    },
+    {
+      "key": "id_hospedaje",
+      "value": ""
+    },
+    {
+      "key": "id_reservacion_daycare",
+      "value": ""
+    },
+    {
+      "key": "id_asistencia",
+      "value": ""
+    },
+    {
+      "key": "id_pago",
+      "value": ""
+    },
+    {
+      "key": "id_servicio_hospedaje",
+      "value": ""
+    },
+    {
+      "key": "id_servicio_daycare",
+      "value": ""
+    },
+    {
+      "key": "id_tarifa",
+      "value": ""
+    },
+    {
+      "key": "id_capacidad",
+      "value": ""
+    },
+    {
+      "key": "id_usuario",
+      "value": ""
+    },
+    {
+      "key": "hoy",
+      "value": ""
+    },
+    {
+      "key": "manana",
+      "value": ""
+    },
+    {
+      "key": "en3dias",
+      "value": ""
+    },
+    {
+      "key": "en7dias",
+      "value": ""
+    },
+    {
+      "key": "en9dias",
+      "value": ""
+    },
+    {
+      "key": "en30dias",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Estado",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Confirma que Express responde. No requiere sesión.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. Sesión",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Usa las variables `correo` y `password` del entorno. Guarda el token automáticamente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{correo}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "if (json.success) { pm.collectionVariables.set(\"token\", json.data.token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mi usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login incorrecto (debe fallar 401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{correo}}\",\n  \"password\": \"contrasena-incorrecta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Servicios",
+      "item": [
+        {
+          "name": "Listar servicios (tarifa y capacidad vigentes)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/servicios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "servicios"
+              ]
+            },
+            "description": "Guarda los IDs del servicio de hospedaje y del de daycare."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "const h = json.data.find(s => s.tipo === 'HOSPEDAJE');",
+                  "const d = json.data.find(s => s.tipo === 'DAYCARE');",
+                  "if (h) pm.collectionVariables.set('id_servicio_hospedaje', h.id_servicio);",
+                  "if (d) pm.collectionVariables.set('id_servicio_daycare', d.id_servicio);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Propietarios",
+      "item": [
+        {
+          "name": "Crear propietario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/propietarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "propietarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Maria\",\n  \"apellido\": \"Gomez\",\n  \"telefono\": \"5555-1234\",\n  \"correo\": \"maria.gomez@ejemplo.com\",\n  \"direccion\": \"Zona 1, Guatemala\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.success) { pm.collectionVariables.set(\"id_propietario\", json.data.id_propietario); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear propietario inválido (debe fallar 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/propietarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "propietarios"
+              ]
+            },
+            "description": "Muestra el formato de errores de validación.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\",\n  \"apellido\": \"Gomez\",\n  \"telefono\": \"abc\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar / buscar propietarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/propietarios?q=gomez",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "propietarios"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "gomez",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver propietario (con mascotas)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/propietarios/{{id_propietario}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "propietarios",
+                "{{id_propietario}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar propietario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/propietarios/{{id_propietario}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "propietarios",
+                "{{id_propietario}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Maria\",\n  \"apellido\": \"Gomez\",\n  \"telefono\": \"5555-9999\",\n  \"correo\": \"maria.gomez@ejemplo.com\",\n  \"direccion\": \"Zona 10, Guatemala\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Mascotas",
+      "item": [
+        {
+          "name": "Crear mascota",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mascotas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mascotas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_propietario\": \"{{id_propietario}}\",\n  \"nombre\": \"Toby\",\n  \"raza\": \"Pug\",\n  \"sexo\": \"MACHO\",\n  \"fecha_nacimiento\": \"2023-01-10\",\n  \"peso_kg\": 8.5,\n  \"observaciones\": \"Alergico al pollo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.success) { pm.collectionVariables.set(\"id_mascota\", json.data.id_mascota); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar / buscar mascotas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mascotas?q=toby",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mascotas"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "toby",
+                  "disabled": false
+                },
+                {
+                  "key": "id_propietario",
+                  "value": "{{id_propietario}}",
+                  "disabled": true
+                },
+                {
+                  "key": "incluir_inactivas",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver mascota",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mascotas/{{id_mascota}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mascotas",
+                "{{id_mascota}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar mascota",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mascotas/{{id_mascota}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mascotas",
+                "{{id_mascota}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_propietario\": \"{{id_propietario}}\",\n  \"nombre\": \"Toby\",\n  \"raza\": \"Pug\",\n  \"sexo\": \"MACHO\",\n  \"fecha_nacimiento\": \"2023-01-10\",\n  \"peso_kg\": 9.1,\n  \"observaciones\": \"Alergico al pollo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Reservaciones (hospedaje)",
+      "item": [
+        {
+          "name": "Cotizar hospedaje (no crea nada)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservaciones/cotizacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservaciones",
+                "cotizacion"
+              ]
+            },
+            "description": "Devuelve noches, precio, monto total, cupos por día y si la mascota ya tiene otra reserva en esas fechas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_servicio\": \"{{id_servicio_hospedaje}}\",\n  \"fecha_inicio\": \"{{hoy}}T14:00\",\n  \"fecha_fin\": \"{{en3dias}}T12:00\",\n  \"id_mascota\": \"{{id_mascota}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear reserva de hospedaje",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservaciones"
+              ]
+            },
+            "description": "Guarda `id_reservacion` e `id_hospedaje`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_mascota\": \"{{id_mascota}}\",\n  \"id_servicio\": \"{{id_servicio_hospedaje}}\",\n  \"fecha_inicio\": \"{{hoy}}T14:00\",\n  \"fecha_fin\": \"{{en3dias}}T12:00\",\n  \"observaciones\": \"Traer su comida\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.success) { pm.collectionVariables.set(\"id_reservacion\", json.data.id_reservacion); }",
+                  "if (json.success && json.data.hospedaje) pm.collectionVariables.set('id_hospedaje', json.data.hospedaje.id_hospedaje);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reserva con fechas cruzadas (debe fallar 409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservaciones"
+              ]
+            },
+            "description": "La misma mascota ya está hospedada esos días.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_mascota\": \"{{id_mascota}}\",\n  \"id_servicio\": \"{{id_servicio_daycare}}\",\n  \"fecha_inicio\": \"{{manana}}T08:00\",\n  \"fecha_fin\": \"{{manana}}T17:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar reservaciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reservaciones?",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservaciones"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "PENDIENTE",
+                  "disabled": true
+                },
+                {
+                  "key": "id_servicio",
+                  "value": "{{id_servicio_hospedaje}}",
+                  "disabled": true
+                },
+                {
+                  "key": "id_propietario",
+                  "value": "{{id_propietario}}",
+                  "disabled": true
+                },
+                {
+                  "key": "desde",
+                  "value": "{{hoy}}",
+                  "disabled": true
+                },
+                {
+                  "key": "hasta",
+                  "value": "{{en30dias}}",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "toby",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Activa los filtros que necesites en la pestaña Params."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver reservación (detalle)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reservaciones/{{id_reservacion}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservaciones",
+                "{{id_reservacion}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirmar reservación",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservaciones/{{id_reservacion}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservaciones",
+                "{{id_reservacion}}",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CONFIRMADA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Hospedaje",
+      "item": [
+        {
+          "name": "Listar hospedajes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hospedajes?fecha={{hoy}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hospedajes"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "PENDIENTE",
+                  "disabled": true
+                },
+                {
+                  "key": "fecha",
+                  "value": "{{hoy}}",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "`estado`: PENDIENTE, HOSPEDADO o FINALIZADO. `fecha`: hospedajes cuya estadía incluye ese día."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar entrada (check-in)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/hospedajes/{{id_hospedaje}}/entrada",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hospedajes",
+                "{{id_hospedaje}}",
+                "entrada"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observaciones\": \"Llegó con su cama\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Pagos",
+      "item": [
+        {
+          "name": "Registrar pago parcial",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ]
+            },
+            "description": "`metodo_pago`: EFECTIVO, TARJETA o TRANSFERENCIA. No puede superar el saldo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_reservacion\": \"{{id_reservacion}}\",\n  \"monto\": 200,\n  \"metodo_pago\": \"EFECTIVO\",\n  \"observaciones\": \"Anticipo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.success && json.data.pagos.length) pm.collectionVariables.set('id_pago', json.data.pagos[json.data.pagos.length - 1].id_pago);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pago mayor al saldo (debe fallar 409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_reservacion\": \"{{id_reservacion}}\",\n  \"monto\": 999999,\n  \"metodo_pago\": \"TARJETA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar pagos de la reservación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pagos?id_reservacion={{id_reservacion}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ],
+              "query": [
+                {
+                  "key": "id_reservacion",
+                  "value": "{{id_reservacion}}",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8. Hospedaje: salida",
+      "item": [
+        {
+          "name": "Registrar salida (check-out)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/hospedajes/{{id_hospedaje}}/salida",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hospedajes",
+                "{{id_hospedaje}}",
+                "salida"
+              ]
+            },
+            "description": "Devuelve `cobro_salida` con noches extra, monto total, pagado y saldo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observaciones\": \"Salió en buen estado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liquidar saldo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ]
+            },
+            "description": "Con la tarifa de prueba (Q150/noche × 3 = Q450) y el anticipo de Q200, el saldo es Q250.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_reservacion\": \"{{id_reservacion}}\",\n  \"monto\": 250,\n  \"metodo_pago\": \"TARJETA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Anular pago (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/{{id_pago}}/anular",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "{{id_pago}}",
+                "anular"
+              ]
+            },
+            "description": "Anula el anticipo guardado en id_pago; el saldo vuelve a subir en ese monto."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "9. Daycare",
+      "item": [
+        {
+          "name": "Crear reserva de daycare (3 días)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservaciones"
+              ]
+            },
+            "description": "Crea una asistencia por cada día (3 días: del día +7 al +9). Horario permitido: 07:00 a 19:00.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_mascota\": \"{{id_mascota}}\",\n  \"id_servicio\": \"{{id_servicio_daycare}}\",\n  \"fecha_inicio\": \"{{en7dias}}T08:00\",\n  \"fecha_fin\": \"{{en9dias}}T17:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.success) { pm.collectionVariables.set(\"id_reservacion_daycare\", json.data.id_reservacion); }",
+                  "if (json.success && json.data.asistencias.length) pm.collectionVariables.set('id_asistencia', json.data.asistencias[0].id_asistencia);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Daycare fuera de horario (debe fallar 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_mascota\": \"{{id_mascota}}\",\n  \"id_servicio\": \"{{id_servicio_daycare}}\",\n  \"fecha_inicio\": \"{{en30dias}}T05:00\",\n  \"fecha_fin\": \"{{en30dias}}T17:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar asistencias del día",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/daycare/asistencias?fecha={{en7dias}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "daycare",
+                "asistencias"
+              ],
+              "query": [
+                {
+                  "key": "fecha",
+                  "value": "{{en7dias}}",
+                  "disabled": false
+                },
+                {
+                  "key": "estado",
+                  "value": "PROGRAMADO",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Sin `fecha` devuelve las de hoy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar entrada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/daycare/asistencias/{{id_asistencia}}/entrada",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "daycare",
+                "asistencias",
+                "{{id_asistencia}}",
+                "entrada"
+              ]
+            },
+            "description": "Solo funciona el mismo día de la asistencia. En el Runner esta asistencia es del día +7, así que se espera 409. Para probarla de verdad, crea una reserva de daycare que empiece hoy.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar salida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/daycare/asistencias/{{id_asistencia}}/salida",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "daycare",
+                "asistencias",
+                "{{id_asistencia}}",
+                "salida"
+              ]
+            },
+            "description": "Requiere que el perro esté PRESENTE (después de la entrada).",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Marcar ausente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/daycare/asistencias/{{id_asistencia}}/ausente",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "daycare",
+                "asistencias",
+                "{{id_asistencia}}",
+                "ausente"
+              ]
+            },
+            "description": "Solo para días de hoy o pasados.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observaciones\": \"No se presentó\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Cancelar reserva de daycare",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservaciones/{{id_reservacion_daycare}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservaciones",
+                "{{id_reservacion_daycare}}",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CANCELADA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10. Configuración (ADMIN)",
+      "item": [
+        {
+          "name": "Listar tarifas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tarifas?",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tarifas"
+              ],
+              "query": [
+                {
+                  "key": "id_servicio",
+                  "value": "{{id_servicio_hospedaje}}",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear tarifa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tarifas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tarifas"
+              ]
+            },
+            "description": "La unidad (NOCHE o DIA) se asigna según el servicio.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_servicio\": \"{{id_servicio_daycare}}\",\n  \"nombre\": \"Temporada alta\",\n  \"precio\": 110,\n  \"fecha_inicio_vigencia\": \"{{en30dias}}\",\n  \"fecha_fin_vigencia\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.success) { pm.collectionVariables.set(\"id_tarifa\", json.data.id_tarifa); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar tarifa",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tarifas/{{id_tarifa}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tarifas",
+                "{{id_tarifa}}"
+              ]
+            },
+            "description": "Campos opcionales: nombre, precio, fecha_fin_vigencia, activo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"precio\": 120,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar capacidades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/capacidades?",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "capacidades"
+              ],
+              "query": [
+                {
+                  "key": "id_servicio",
+                  "value": "{{id_servicio_hospedaje}}",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear capacidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/capacidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "capacidades"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_servicio\": \"{{id_servicio_hospedaje}}\",\n  \"capacidad_maxima\": 12,\n  \"fecha_inicio_vigencia\": \"{{en30dias}}\",\n  \"fecha_fin_vigencia\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.success) { pm.collectionVariables.set(\"id_capacidad\", json.data.id_capacidad); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar capacidad",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/capacidades/{{id_capacidad}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "capacidades",
+                "{{id_capacidad}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"capacidad_maxima\": 14\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear empleado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "description": "El correo usa la marca de tiempo para no repetirse.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Empleado Prueba\",\n  \"correo\": \"empleado{{$timestamp}}@hachi.local\",\n  \"password\": \"ClaveEmpleado1\",\n  \"rol\": \"EMPLEADO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.success) { pm.collectionVariables.set(\"id_usuario\", json.data.id_usuario); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Desactivar usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{id_usuario}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{id_usuario}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11. Mascotas: baja",
+      "item": [
+        {
+          "name": "Desactivar mascota",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mascotas/{{id_mascota}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mascotas",
+                "{{id_mascota}}"
+              ]
+            },
+            "description": "Falla con 409 si la mascota tiene reservas activas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reactivar mascota",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mascotas/{{id_mascota}}/reactivar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mascotas",
+                "{{id_mascota}}",
+                "reactivar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

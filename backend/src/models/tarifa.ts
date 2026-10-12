@@ -7,8 +7,8 @@ export interface Tarifa {
   nombre: string;
   precio: number;
   unidad: UnidadTarifa;
-  fecha_inicio_vigencia: Date;
-  fecha_fin_vigencia: Date | null;
+  fecha_inicio_vigencia: string;
+  fecha_fin_vigencia: string | null;
   activo: boolean;
 }
 

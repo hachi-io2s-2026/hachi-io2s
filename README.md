@@ -72,15 +72,12 @@ Abrir la dirección que imprima Vite, normalmente **http://localhost:5173**.
 
 ### 6.1 Crear la base de datos
 
-Abrir **MySQL Workbench**, conectarse al servidor MySQL local y ejecutar el script SQL que esté versionado en `database/` (`database/01_create_database.sql`).
+Abrir **MySQL Workbench**, conectarse al servidor MySQL local y ejecutar, en orden, los scripts versionados en `database/`:
 
-Si todavía no hay un script de inicialización disponible, para una primera prueba puede ejecutarse:
+1. `database/01_create_database.sql`: crea la base de datos y las tablas.
+2. `database/02_seed.sql`: carga datos de prueba (servicios, tarifas, capacidades, propietarios y mascotas ficticios). Se puede ejecutar varias veces sin duplicar datos.
 
-```sql
-CREATE DATABASE IF NOT EXISTS hachi_db
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-```
+> Si ya tenías creada `hachi_db` con una versión anterior del script, los `CREATE TABLE IF NOT EXISTS` **no** actualizan tablas existentes. En desarrollo, borra la base (`DROP DATABASE hachi_db;`) y vuelve a ejecutar ambos scripts.
 
 ### 6.2 Credenciales locales
 
@@ -114,9 +111,25 @@ DB_PORT=3306
 DB_USER=hachi_app
 DB_PASSWORD=TU_CONTRASENA_LOCAL
 DB_NAME=hachi_db
+
+JWT_SECRET=UN_TEXTO_LARGO_Y_ALEATORIO
+JWT_EXPIRES_IN=8h
+CORS_ORIGIN=http://localhost:5173
 ```
 
-### 7.2 Iniciar la API
+`JWT_SECRET` es obligatorio para iniciar sesión. Cada integrante elige el suyo localmente y nunca se sube al repositorio.
+
+### 7.2 Crear el usuario administrador
+
+Desde `backend/` (una sola vez, o para restablecer la contraseña):
+
+```powershell
+npm run crear-admin -- "Tu Nombre" tu.correo@ejemplo.com "contra"
+```
+
+La contraseña se guarda cifrada con bcrypt. Los demás usuarios (rol `EMPLEADO`) los crea el administrador desde `POST /api/usuarios`.
+
+### 7.3 Iniciar la API
 
 Desde `backend/`:
 
@@ -124,14 +137,7 @@ Desde `backend/`:
 npm run dev
 ```
 
-El backend debería iniciar normalmente en **http://localhost:3000**.
-
-Con la implementación inicial acordada, probar:
-
-- **http://localhost:3000/api/health**: confirma que Express responde.
-- **http://localhost:3000/api/test-db**: ejecuta una consulta a MySQL **solo si el endpoint temporal de diagnóstico está implementado**. No dejar este endpoint público en producción.
-
-### 7.3 Comprobar compilación
+### 7.4 Comprobar compilación
 
 Dentro de `backend/`:
 
