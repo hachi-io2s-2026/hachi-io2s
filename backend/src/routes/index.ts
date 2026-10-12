@@ -18,6 +18,8 @@ const soloAdmin = requerirRol("ADMIN");
 
 // Publica
 router.post("/auth/login", auth.login);
+// Servicios con tarifa y capacidad vigentes (sin datos personales); la usa la pagina informativa
+router.get("/servicios", servicios.listar);
 
 // Todo lo siguiente requiere sesion iniciada
 router.use(requerirAuth);
@@ -39,8 +41,6 @@ router.post("/mascotas", mascotas.crear);
 router.put("/mascotas/:id", mascotas.actualizar);
 router.delete("/mascotas/:id", mascotas.desactivar);
 router.post("/mascotas/:id/reactivar", mascotas.reactivar);
-
-router.get("/servicios", servicios.listar);
 
 router.get("/tarifas", tarifas.listar);
 router.post("/tarifas", soloAdmin, tarifas.crear);
