@@ -149,10 +149,6 @@
   color: var(--verde);
 }
 
-.flecha-atras {
-  transform: rotate(180deg);
-}
-
 /* Foto lateral */
 .login-imagen {
   position: relative;
@@ -207,5 +203,69 @@
 
   .login-contenido {
     padding: 32px 0;
+  }
+}
+
+/* Selector cliente / personal */
+.login-tipos {
+  display: inline-flex;
+  gap: 2px;
+  margin-bottom: 28px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--gris-boton);
+}
+
+.login-tipos button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--texto-suave);
+  background: transparent;
+  cursor: pointer;
+}
+
+.login-tipos button.activo {
+  color: var(--negro);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.login-ayuda a {
+  font-weight: 700;
+  color: var(--verde);
+}
+
+/* Registro */
+.registro-contenido {
+  max-width: 460px;
+}
+
+.campos-dobles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.registro-nota {
+  margin: 0;
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #1d3f73;
+  background: #e8f0fb;
+}
+
+.login-imagen-registro {
+  background-image: url('/fotos/galeria-2.webp');
+}
+
+@media (max-width: 520px) {
+  .campos-dobles {
+    grid-template-columns: 1fr;
   }
 }

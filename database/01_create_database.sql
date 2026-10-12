@@ -27,6 +27,19 @@ CREATE TABLE IF NOT EXISTS propietarios (
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- CUENTAS DE CLIENTE (portal donde el dueno ve a sus perros y pide reservas)
+CREATE TABLE IF NOT EXISTS cuentas_cliente (
+    id_cuenta INT AUTO_INCREMENT PRIMARY KEY,
+    id_propietario INT NOT NULL UNIQUE,
+    correo VARCHAR(150) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_cuenta_propietario
+        FOREIGN KEY (id_propietario) REFERENCES propietarios(id_propietario)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
 -- MASCOTAS
 CREATE TABLE IF NOT EXISTS mascotas (
     id_mascota INT AUTO_INCREMENT PRIMARY KEY,
@@ -88,6 +101,8 @@ CREATE TABLE IF NOT EXISTS reservaciones (
     monto_total DECIMAL(10,2) NOT NULL,
     estado ENUM('PENDIENTE', 'CONFIRMADA', 'EN_CURSO', 'FINALIZADA', 'CANCELADA')
         NOT NULL DEFAULT 'PENDIENTE',
+    -- Quien creo la reserva: el personal del hotel o el cliente desde el portal
+    origen ENUM('PERSONAL', 'CLIENTE') NOT NULL DEFAULT 'PERSONAL',
     observaciones TEXT,
     fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_reserva_mascota
@@ -178,3 +193,29 @@ CREATE TABLE IF NOT EXISTS capacidades (
     ),
     INDEX idx_capacidad_servicio_vigencia (id_servicio, fecha_inicio_vigencia)
 );
+-- Cuentas con las que los duenos entran al portal
+CREATE TABLE IF NOT EXISTS cuentas_cliente (
+    id_cuenta INT AUTO_INCREMENT PRIMARY KEY,
+    id_propietario INT NOT NULL UNIQUE,
+    correo VARCHAR(150) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_cuenta_propietario
+        FOREIGN KEY (id_propietario) REFERENCES propietarios(id_propietario)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- Columna "origen" en reservaciones (solo si todavia no existe)
+SET @existe := (
+    SELECT COUNT(*) FROM information_schema.columns
+    WHERE table_schema = DATABASE() AND table_name = 'reservaciones' AND column_name = 'origen'
+);
+SET @sentencia := IF(
+    @existe = 0,
+    'ALTER TABLE reservaciones ADD COLUMN origen ENUM(''PERSONAL'', ''CLIENTE'') NOT NULL DEFAULT ''PERSONAL'' AFTER estado',
+    'SELECT 1'
+);
+PREPARE paso FROM @sentencia;
+EXECUTE paso;
+DEALLOCATE PREPARE paso;

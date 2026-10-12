@@ -1,16 +1,20 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, Navigate, useLocation, useNavigate } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { mensajeError } from '../api/client'
 import { useSesion } from '../auth/contexto'
 import { IconoFlecha, IconoOjo, IconoOjoTachado } from '../components/Iconos'
 import './Login.css'
 
+type Tipo = 'cliente' | 'personal'
+
 export default function Login() {
-  const { usuario, iniciarSesion } = useSesion()
+  const { usuario, cliente, iniciarSesion, iniciarSesionCliente } = useSesion()
   const navegar = useNavigate()
   const ubicacion = useLocation()
+  const [params, setParams] = useSearchParams()
+  const tipo: Tipo = params.get('tipo') === 'personal' ? 'personal' : 'cliente'
   // Pagina a la que queria entrar antes de que se le pidiera iniciar sesion
-  const destino = (ubicacion.state as { desde?: string } | null)?.desde ?? '/panel'
+  const desde = (ubicacion.state as { desde?: string } | null)?.desde
 
   const [correo, setCorreo] = useState('')
   const [password, setPassword] = useState('')
@@ -22,15 +26,26 @@ export default function Login() {
     document.title = 'Iniciar sesión · HACHI'
   }, [])
 
-  if (usuario) return <Navigate to={destino} replace />
+  if (usuario) return <Navigate to={desde?.startsWith('/panel') ? desde : '/panel'} replace />
+  if (cliente) return <Navigate to={desde?.startsWith('/mi-cuenta') ? desde : '/mi-cuenta'} replace />
+
+  const cambiarTipo = (nuevo: Tipo) => {
+    setError(null)
+    setParams(nuevo === 'personal' ? { tipo: 'personal' } : {}, { replace: true, state: ubicacion.state })
+  }
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
     setEnviando(true)
     try {
-      await iniciarSesion(correo.trim(), password)
-      navegar(destino, { replace: true })
+      if (tipo === 'personal') {
+        await iniciarSesion(correo.trim(), password)
+        navegar(desde?.startsWith('/panel') ? desde : '/panel', { replace: true })
+      } else {
+        await iniciarSesionCliente(correo.trim(), password)
+        navegar(desde?.startsWith('/mi-cuenta') ? desde : '/mi-cuenta', { replace: true })
+      }
     } catch (err) {
       setError(mensajeError(err))
       setEnviando(false)
@@ -46,8 +61,21 @@ export default function Login() {
         </Link>
 
         <div className="login-contenido">
-          <h1>Inicia sesión</h1>
-          <p className="login-subtitulo">Accede al sistema de gestión del hotel y daycare.</p>
+          <div className="login-tipos" role="tablist" aria-label="Tipo de cuenta">
+            <button type="button" role="tab" aria-selected={tipo === 'cliente'} className={tipo === 'cliente' ? 'activo' : ''} onClick={() => cambiarTipo('cliente')}>
+              Soy cliente
+            </button>
+            <button type="button" role="tab" aria-selected={tipo === 'personal'} className={tipo === 'personal' ? 'activo' : ''} onClick={() => cambiarTipo('personal')}>
+              Personal del hotel
+            </button>
+          </div>
+
+          <h1>{tipo === 'cliente' ? 'Bienvenido de vuelta' : 'Acceso del personal'}</h1>
+          <p className="login-subtitulo">
+            {tipo === 'cliente'
+              ? 'Entra para ver a tus perros, tus reservas y solicitar una estancia.'
+              : 'Entra al panel de recepción para gestionar reservas, hospedaje y daycare.'}
+          </p>
 
           <form className="login-form" onSubmit={enviar} noValidate>
             <label className="campo">
@@ -91,17 +119,19 @@ export default function Login() {
               </p>
             )}
 
-            <button
-              type="submit"
-              className="boton boton-verde login-boton"
-              disabled={enviando || !correo.trim() || !password}
-            >
+            <button type="submit" className="boton boton-verde login-boton" disabled={enviando || !correo.trim() || !password}>
               {enviando ? 'Ingresando…' : 'Iniciar sesión'}
             </button>
           </form>
 
           <p className="login-ayuda">
-            ¿No tienes una cuenta? Solicítala al administrador del sistema.
+            {tipo === 'cliente' ? (
+              <>
+                ¿Todavía no tienes cuenta? <Link to="/registro">Crea tu cuenta</Link>
+              </>
+            ) : (
+              '¿No tienes acceso? Solicítalo al administrador del sistema.'
+            )}
           </p>
         </div>
 

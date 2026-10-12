@@ -2,6 +2,7 @@
 import { Router } from "express";
 import * as auth from "../controllers/auth.js";
 import * as capacidades from "../controllers/capacidades.js";
+import * as clientes from "../controllers/clientes.js";
 import * as daycare from "../controllers/daycare.js";
 import * as hospedajes from "../controllers/hospedajes.js";
 import * as mascotas from "../controllers/mascotas.js";
@@ -11,7 +12,7 @@ import * as reservaciones from "../controllers/reservaciones.js";
 import * as servicios from "../controllers/servicios.js";
 import * as tarifas from "../controllers/tarifas.js";
 import * as usuarios from "../controllers/usuarios.js";
-import { requerirAuth, requerirRol } from "../middlewares/auth.js";
+import { requerirAuth, requerirCliente, requerirRol } from "../middlewares/auth.js";
 
 import reportes from "./reportes.routes.js";
 
@@ -22,6 +23,22 @@ const soloAdmin = requerirRol("ADMIN");
 router.post("/auth/login", auth.login);
 // Servicios con tarifa y capacidad vigentes (sin datos personales); la usa la pagina informativa
 router.get("/servicios", servicios.listar);
+
+// ---------- Portal del cliente (cada cliente solo ve sus propios datos) ----------
+const portal = Router();
+portal.post("/registro", clientes.registro);
+portal.post("/login", clientes.login);
+portal.use(requerirCliente);
+portal.get("/me", clientes.perfil);
+portal.put("/me", clientes.actualizarPerfil);
+portal.post("/mascotas", clientes.crearMascota);
+portal.put("/mascotas/:id", clientes.actualizarMascota);
+portal.get("/reservaciones", clientes.listarReservaciones);
+portal.post("/reservaciones/cotizacion", clientes.cotizacion);
+portal.get("/reservaciones/:id", clientes.obtenerReservacion);
+portal.post("/reservaciones", clientes.solicitarReservacion);
+portal.post("/reservaciones/:id/cancelar", clientes.cancelarReservacion);
+router.use("/cliente", portal);
 
 // Todo lo siguiente requiere sesion iniciada
 router.use(requerirAuth);

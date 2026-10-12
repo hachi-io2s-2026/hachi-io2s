@@ -1,0 +1,78 @@
+.selector-dia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.selector-dia .boton-contorno {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+}
+
+.selector-dia-texto {
+  display: grid;
+  min-width: 130px;
+  text-align: center;
+}
+
+.selector-dia-texto strong {
+  font-size: 1.05rem;
+  text-transform: capitalize;
+  color: var(--negro);
+}
+
+.selector-dia-texto span {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.selector-dia-fecha {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #d5d8d4;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--texto);
+  background: #fff;
+}
+
+.resumen-dia {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.resumen-dia-item {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.resumen-dia-item span {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.resumen-dia-item strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--negro);
+}
+
+.nota-dia {
+  margin: 10px 2px 0;
+}
+
+@media (max-width: 640px) {
+  .resumen-dia {
+    grid-template-columns: 1fr 1fr;
+  }
+}

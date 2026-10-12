@@ -17,14 +17,14 @@ import { dia, fechaHora, id, idParams, textoOpcional } from "../utils/validacion
 
 const ESTADOS = ["PENDIENTE", "CONFIRMADA", "EN_CURSO", "FINALIZADA", "CANCELADA"] as const;
 
-const cotizacionSchema = z.object({
+export const cotizacionSchema = z.object({
   id_servicio: id,
   fecha_inicio: fechaHora,
   fecha_fin: fechaHora,
   id_mascota: id.optional(),
 });
 
-const crearSchema = z.object({
+export const crearSchema = z.object({
   id_mascota: id,
   id_servicio: id,
   fecha_inicio: fechaHora,
@@ -165,14 +165,20 @@ export async function cotizacion(req: Request, res: Response) {
   res.json({ success: true, data: { ...resultado, cruce } });
 }
 
-export async function crear(req: Request, res: Response) {
-  const d = crearSchema.parse(req.body);
+export type DatosReservacion = z.infer<typeof crearSchema>;
 
+// Crea una reservacion con todas sus validaciones (fechas, cupo, cruces y tarifa).
+// La usan el panel del personal y el portal del cliente, para que ambos sigan las mismas reglas.
+export async function registrarReservacion(
+  d: DatosReservacion,
+  origen: "PERSONAL" | "CLIENTE" = "PERSONAL"
+): Promise<number> {
   if (diaDe(d.fecha_inicio) < hoy()) {
     throw new HttpError(400, "No se pueden crear reservaciones en fechas pasadas");
   }
 
-  const idReservacion = await enTransaccion(async (conn) => {
+  return enTransaccion(async (conn) => {
+    // cotizar(..., true) bloquea el servicio hasta terminar la transaccion
     const cot = await cotizar(conn, d, true);
 
     const [[mascota]] = await conn.query<RowDataPacket[]>(
@@ -200,8 +206,8 @@ export async function crear(req: Request, res: Response) {
 
     const [resultado] = await conn.query<ResultSetHeader>(
       `INSERT INTO reservaciones
-         (id_mascota, id_servicio, id_tarifa, fecha_inicio, fecha_fin, monto_total, observaciones)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         (id_mascota, id_servicio, id_tarifa, fecha_inicio, fecha_fin, monto_total, observaciones, origen)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         d.id_mascota,
         d.id_servicio,
@@ -210,10 +216,12 @@ export async function crear(req: Request, res: Response) {
         d.fecha_fin,
         cot.monto_total,
         d.observaciones,
+        origen,
       ]
     );
     const nuevaId = resultado.insertId;
 
+    // Registro operativo: un hospedaje, o una asistencia por cada dia de daycare
     if (cot.servicio.tipo === "HOSPEDAJE") {
       await conn.query(`INSERT INTO hospedajes (id_reservacion) VALUES (?)`, [nuevaId]);
     } else {
@@ -224,7 +232,10 @@ export async function crear(req: Request, res: Response) {
 
     return nuevaId;
   });
+}
 
+export async function crear(req: Request, res: Response) {
+  const idReservacion = await registrarReservacion(crearSchema.parse(req.body));
   res.status(201).json({ success: true, data: await buscarDetalle(idReservacion) });
 }
 
