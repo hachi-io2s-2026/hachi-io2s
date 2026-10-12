@@ -1,0 +1,96 @@
+.buscador {
+  padding: 16px 18px 14px;
+  border: 1px solid var(--linea);
+  border-radius: 16px;
+  background: var(--blanco);
+}
+
+.buscador-tabs {
+  display: inline-flex;
+  gap: 2px;
+  margin-bottom: 16px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--gris-boton);
+}
+
+.buscador-tab {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.buscador-tab.activo {
+  color: var(--texto);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.buscador-campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: end;
+  gap: 12px;
+}
+
+.buscador-campos label {
+  display: grid;
+  gap: 6px;
+  /* Evita que el ancho minimo de los input date desborde la cuadricula */
+  min-width: 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--texto);
+}
+
+.buscador-campos input {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #d5d8d4;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--texto);
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.buscador-campos input:focus {
+  outline: none;
+  border-color: var(--verde);
+}
+
+.buscador-boton {
+  height: 44px;
+  white-space: nowrap;
+}
+
+.buscador-resumen {
+  margin: 12px 0 0;
+  font-size: 0.82rem;
+  color: var(--texto-suave);
+}
+
+.buscador-resumen.error {
+  font-weight: 600;
+  color: #b42318;
+}
+
+@media (max-width: 640px) {
+  .buscador-campos {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .buscador-boton {
+    grid-column: 1 / -1;
+  }
+}
