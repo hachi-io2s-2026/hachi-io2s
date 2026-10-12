@@ -56,13 +56,36 @@ CREATE TABLE IF NOT EXISTS servicios (
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- TARIFAS
+CREATE TABLE IF NOT EXISTS tarifas (
+    id_tarifa INT AUTO_INCREMENT PRIMARY KEY,
+    id_servicio INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    precio DECIMAL(10,2) NOT NULL,
+    unidad ENUM('NOCHE', 'DIA') NOT NULL,
+    fecha_inicio_vigencia DATE NOT NULL,
+    fecha_fin_vigencia DATE NULL,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT fk_tarifa_servicio
+        FOREIGN KEY (id_servicio) REFERENCES servicios(id_servicio)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT chk_precio_tarifa CHECK (precio >= 0),
+    CONSTRAINT chk_vigencia_tarifa CHECK (
+        fecha_fin_vigencia IS NULL
+        OR fecha_fin_vigencia >= fecha_inicio_vigencia
+    ),
+    INDEX idx_tarifa_servicio_vigencia (id_servicio, fecha_inicio_vigencia)
+);
+
 --  RESERVACIONES
 CREATE TABLE IF NOT EXISTS reservaciones (
     id_reservacion INT AUTO_INCREMENT PRIMARY KEY,
     id_mascota INT NOT NULL,
     id_servicio INT NOT NULL,
+    id_tarifa INT NOT NULL,
     fecha_inicio DATETIME NOT NULL,
     fecha_fin DATETIME NOT NULL,
+    monto_total DECIMAL(10,2) NOT NULL,
     estado ENUM('PENDIENTE', 'CONFIRMADA', 'EN_CURSO', 'FINALIZADA', 'CANCELADA')
         NOT NULL DEFAULT 'PENDIENTE',
     observaciones TEXT,
@@ -73,7 +96,11 @@ CREATE TABLE IF NOT EXISTS reservaciones (
     CONSTRAINT fk_reserva_servicio
         FOREIGN KEY (id_servicio) REFERENCES servicios(id_servicio)
         ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_reserva_tarifa
+        FOREIGN KEY (id_tarifa) REFERENCES tarifas(id_tarifa)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT chk_fechas_reserva CHECK (fecha_fin > fecha_inicio),
+    CONSTRAINT chk_monto_reserva CHECK (monto_total >= 0),
     INDEX idx_reserva_fechas (fecha_inicio, fecha_fin),
     INDEX idx_reserva_estado (estado)
 );
@@ -116,27 +143,6 @@ CREATE TABLE IF NOT EXISTS asistencias_daycare (
     )
 );
 
--- TARIFAS
-CREATE TABLE IF NOT EXISTS tarifas (
-    id_tarifa INT AUTO_INCREMENT PRIMARY KEY,
-    id_servicio INT NOT NULL,
-    nombre VARCHAR(100) NOT NULL,
-    precio DECIMAL(10,2) NOT NULL,
-    unidad ENUM('NOCHE', 'DIA') NOT NULL,
-    fecha_inicio_vigencia DATE NOT NULL,
-    fecha_fin_vigencia DATE NULL,
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-    CONSTRAINT fk_tarifa_servicio
-        FOREIGN KEY (id_servicio) REFERENCES servicios(id_servicio)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT chk_precio_tarifa CHECK (precio >= 0),
-    CONSTRAINT chk_vigencia_tarifa CHECK (
-        fecha_fin_vigencia IS NULL
-        OR fecha_fin_vigencia >= fecha_inicio_vigencia
-    ),
-    INDEX idx_tarifa_servicio_vigencia (id_servicio, fecha_inicio_vigencia)
-);
-
 -- PAGOS
 CREATE TABLE IF NOT EXISTS pagos (
     id_pago INT AUTO_INCREMENT PRIMARY KEY,
@@ -155,23 +161,20 @@ CREATE TABLE IF NOT EXISTS pagos (
     INDEX idx_pago_estado (estado)
 );
 
-CREATE TABLE capacidades (
+-- CAPACIDADES 
+CREATE TABLE IF NOT EXISTS capacidades (
     id_capacidad INT AUTO_INCREMENT PRIMARY KEY,
     id_servicio INT NOT NULL,
     capacidad_maxima INT NOT NULL,
     fecha_inicio_vigencia DATE NOT NULL,
     fecha_fin_vigencia DATE NULL,
-
     CONSTRAINT fk_capacidad_servicio
-        FOREIGN KEY (id_servicio)
-        REFERENCES servicios(id_servicio),
-
-    CONSTRAINT chk_capacidad_positiva
-        CHECK (capacidad_maxima > 0),
-
-    CONSTRAINT chk_vigencia_capacidad
-        CHECK (
-            fecha_fin_vigencia IS NULL
-            OR fecha_fin_vigencia >= fecha_inicio_vigencia
-        )
+        FOREIGN KEY (id_servicio) REFERENCES servicios(id_servicio)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT chk_capacidad_positiva CHECK (capacidad_maxima > 0),
+    CONSTRAINT chk_vigencia_capacidad CHECK (
+        fecha_fin_vigencia IS NULL
+        OR fecha_fin_vigencia >= fecha_inicio_vigencia
+    ),
+    INDEX idx_capacidad_servicio_vigencia (id_servicio, fecha_inicio_vigencia)
 );
