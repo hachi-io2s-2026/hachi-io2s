@@ -11,11 +11,11 @@ const ENLACES = [
 ]
 
 interface Props {
-  // Se conectara a la pantalla de login en el siguiente paso
   onIniciarSesion?: () => void
+  textoBoton?: string
 }
 
-export default function Navbar({ onIniciarSesion }: Props) {
+export default function Navbar({ onIniciarSesion, textoBoton = 'Iniciar sesión' }: Props) {
   const [abierto, setAbierto] = useState(false)
   const cerrar = () => setAbierto(false)
 
@@ -56,7 +56,7 @@ export default function Navbar({ onIniciarSesion }: Props) {
               onIniciarSesion?.()
             }}
           >
-            Iniciar sesión
+            {textoBoton}
           </button>
         </nav>
       </div>
