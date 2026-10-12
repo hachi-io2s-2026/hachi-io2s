@@ -12,7 +12,7 @@ async function startServer() {
 
     // Iniciar el servidor
     app.listen(PORT, () => {
-      console.log(`Servidor HACHI en http://localhost:${PORT}`);
+      console.log(`Servidor HACHI en el puerto ${PORT}`);
     });
   } catch (error) {
     console.error("Error al iniciar HACHI:", error); 
