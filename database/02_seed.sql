@@ -19,7 +19,7 @@ FROM servicios s
 WHERE s.tipo = 'DAYCARE'
   AND NOT EXISTS (SELECT 1 FROM tarifas t WHERE t.id_servicio = s.id_servicio);
 
--- CAPACIDADES
+-- CAPACIDADES 
 INSERT INTO capacidades (id_servicio, capacidad_maxima, fecha_inicio_vigencia)
 SELECT s.id_servicio, 10, '2026-01-01'
 FROM servicios s
