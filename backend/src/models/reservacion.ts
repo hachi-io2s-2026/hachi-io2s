@@ -15,7 +15,11 @@ export interface Reservacion {
   fecha_fin: string;
   monto_total: number;
   estado: EstadoReservacion;
+  // PERSONAL: la creo recepcion; CLIENTE: la solicito el dueno desde el portal
+  origen: "PERSONAL" | "CLIENTE";
   observaciones: string | null;
+  // Razon por la que el hotel rechazo una solicitud del portal (la ve el cliente)
+  motivo_rechazo: string | null;
   fecha_creacion: string;
 }
 

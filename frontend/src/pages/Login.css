@@ -23,7 +23,9 @@
 }
 
 .login-marca img {
-  border-radius: 8px;
+  display: block;
+  width: auto;
+  height: 50px;
 }
 
 .login-contenido {
@@ -123,6 +125,12 @@
   margin-top: 4px;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .login-spinner {
+    animation-duration: 2s;
+  }
+}
+
 .login-boton:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -164,7 +172,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(18, 22, 26, 0) 40%, rgba(18, 22, 26, 0.78) 100%);
+  background: linear-gradient(180deg, rgba(18, 22, 26, 0) 30%, rgba(12, 52, 43, 0.88) 100%);
 }
 
 .login-imagen-texto {
@@ -206,32 +214,91 @@
   }
 }
 
-/* Selector cliente / personal */
-.login-tipos {
+/* Acceso unico */
+.login-sello {
   display: inline-flex;
-  gap: 2px;
-  margin-bottom: 28px;
-  padding: 4px;
-  border-radius: 10px;
-  background: var(--gris-boton);
-}
-
-.login-tipos button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 7px;
-  font: inherit;
-  font-size: 0.88rem;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 18px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: var(--texto-suave);
-  background: transparent;
-  cursor: pointer;
+  color: var(--verde);
+  background: var(--verde-tinte);
 }
 
-.login-tipos button.activo {
-  color: var(--negro);
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.campo-aviso {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #8a5a00;
+}
+
+.login-boton {
+  gap: 10px;
+}
+
+.login-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: login-girar 0.7s linear infinite;
+}
+
+@keyframes login-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.login-separador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 14px;
+  font-size: 0.82rem;
+  color: var(--texto-suave);
+}
+
+.login-separador::before,
+.login-separador::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--linea);
+}
+
+.login-ventajas {
+  display: grid;
+  gap: 12px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.login-ventajas li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.login-ventajas span {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(4px);
 }
 
 .login-ayuda a {

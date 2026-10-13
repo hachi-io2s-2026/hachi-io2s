@@ -36,3 +36,27 @@ export async function testConnection() {
     connection.release();
   }
 }
+
+// Columnas agregadas despues de crear la base. Si a una base existente le falta alguna,
+// se agrega al iniciar (mismo cambio que hace database/01_create_database.sql al final).
+const COLUMNAS_NUEVAS = [
+  {
+    tabla: "reservaciones",
+    columna: "motivo_rechazo",
+    definicion: "VARCHAR(500) NULL AFTER observaciones",
+  },
+];
+
+export async function actualizarEsquema() {
+  for (const { tabla, columna, definicion } of COLUMNAS_NUEVAS) {
+    const [[{ existe }]] = await pool.query<mysql.RowDataPacket[]>(
+      `SELECT COUNT(*) AS existe FROM information_schema.columns
+       WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?`,
+      [tabla, columna]
+    );
+    if (Number(existe) === 0) {
+      await pool.query(`ALTER TABLE ${tabla} ADD COLUMN ${columna} ${definicion}`);
+      console.log(`Base actualizada: se agrego ${tabla}.${columna}`);
+    }
+  }
+}

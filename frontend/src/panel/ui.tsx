@@ -79,6 +79,9 @@ const ESTADOS: Record<string, [string, string]> = {
   EN_CURSO: ['En curso', 'verde'],
   FINALIZADA: ['Finalizada', 'gris'],
   CANCELADA: ['Cancelada', 'rojo'],
+  // Estados derivados de las solicitudes del portal (no existen en la base de datos)
+  SOLICITUD: ['Solicitud por responder', 'ambar'],
+  RECHAZADA: ['Rechazada', 'rojo'],
   HOSPEDADO: ['Hospedado', 'verde'],
   FINALIZADO: ['Finalizado', 'gris'],
   PROGRAMADO: ['Programado', 'azul'],

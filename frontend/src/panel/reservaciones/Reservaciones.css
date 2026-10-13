@@ -344,3 +344,66 @@
   margin: 0 0 12px;
   line-height: 1.5;
 }
+
+/* Solicitud del portal que espera respuesta del hotel */
+.solicitud-pendiente {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  border: 1px solid #f1d29b;
+  border-left: 5px solid #d08a16;
+  border-radius: 12px;
+  background: #fff8ea;
+}
+
+.solicitud-pendiente h2 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+
+.solicitud-pendiente p {
+  max-width: 62ch;
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #4d3a14;
+}
+
+.solicitud-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Modal de rechazo */
+.form-rechazo {
+  display: grid;
+  gap: 14px;
+}
+
+.sugerencias-motivo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip-sugerencia {
+  padding: 6px 11px;
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.8rem;
+  text-align: left;
+  color: var(--texto);
+  background: #fff;
+  cursor: pointer;
+}
+
+.chip-sugerencia:hover {
+  border-color: var(--verde);
+  color: var(--verde);
+}

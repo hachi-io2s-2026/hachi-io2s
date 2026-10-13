@@ -377,6 +377,14 @@
   background: var(--gris-boton);
 }
 
+/* Solicitud rechazada por el hotel: el motivo debe leerse con claridad */
+.portal-estado-rechazada {
+  border-left: 4px solid #c43b39;
+  color: #7d231f;
+  background: #fdecea;
+  line-height: 1.5;
+}
+
 .portal-registro {
   margin-top: 16px;
   padding-top: 14px;

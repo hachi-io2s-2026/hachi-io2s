@@ -1,11 +1,19 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import { api, mensajeError } from '../../api/client'
-import type { Asistencia, CobroSalida, MetodoPago, ReservacionDetalle as Detalle } from '../../api/tipos'
+import {
+  esSolicitudSinResponder,
+  estadoVisible,
+  type Asistencia,
+  type CobroSalida,
+  type MetodoPago,
+  type ReservacionDetalle as Detalle,
+} from '../../api/tipos'
 import { useSesion } from '../../auth/contexto'
 import { diferenciaDias, fecha, fechaCorta, fechaHora, hora, hoy, moneda, unidadTexto } from '../../utils/formato'
 import { Aviso, Campo, Cargando, Confirmar, Encabezado, Estado } from '../ui'
 import { useCarga } from '../useCarga'
+import ModalRechazo from './ModalRechazo'
 import './Reservaciones.css'
 
 type AccionPendiente =
@@ -38,6 +46,7 @@ export default function ReservacionDetalle() {
   )
   const [accion, setAccion] = useState<AccionPendiente | null>(null)
   const [cobro, setCobro] = useState<CobroSalida | null>(null)
+  const [rechazando, setRechazando] = useState(false)
 
   useEffect(() => {
     document.title = `Reservación #${id} · HACHI`
@@ -56,10 +65,13 @@ export default function ReservacionDetalle() {
 
   const esHotel = r.tipo === 'HOSPEDAJE'
   const activa = ['PENDIENTE', 'CONFIRMADA', 'EN_CURSO'].includes(r.estado)
+  // Solicitud del portal sin responder: solo se puede aceptar o rechazar
+  const solicitud = esSolicitudSinResponder(r.estado, r.origen)
   const diaHoy = hoy()
   const h = r.hospedaje
   const puedeEntrar =
     esHotel &&
+    !solicitud &&
     h?.estado === 'PENDIENTE' &&
     ['PENDIENTE', 'CONFIRMADA'].includes(r.estado) &&
     diaHoy >= r.fecha_inicio.slice(0, 10) &&
@@ -74,7 +86,15 @@ export default function ReservacionDetalle() {
       case 'cancelar': {
         const estado = accion.tipo === 'confirmar' ? 'CONFIRMADA' : 'CANCELADA'
         setDatos(await api<Detalle>(`/reservaciones/${r.id_reservacion}/estado`, { method: 'PATCH', body: { estado } }))
-        setAviso({ tipo: 'ok', texto: accion.tipo === 'confirmar' ? 'Reservación confirmada.' : 'Reservación cancelada; su cupo quedó libre.' })
+        setAviso({
+          tipo: 'ok',
+          texto:
+            accion.tipo === 'cancelar'
+              ? 'Reservación cancelada; su cupo quedó libre.'
+              : solicitud
+                ? 'Solicitud aceptada. El cliente ya la ve como confirmada y puedes registrar entradas y pagos.'
+                : 'Reservación confirmada.',
+        })
         break
       }
       case 'entrada': {
@@ -110,29 +130,58 @@ export default function ReservacionDetalle() {
         volver={{ a: '/panel/reservaciones', texto: 'Reservaciones' }}
         titulo={
           <span className="titulo-con-estado">
-            Reservación #{r.id_reservacion} <Estado valor={r.estado} />
+            Reservación #{r.id_reservacion} <Estado valor={estadoVisible(r)} />
           </span>
         }
         subtitulo={`${r.servicio} · ${r.origen === 'CLIENTE' ? 'solicitada por el cliente desde el portal' : 'creada en recepción'} el ${fecha(r.fecha_creacion)}`}
         acciones={
-          <>
-            {r.estado === 'PENDIENTE' && (
-              <button type="button" className="boton boton-verde" onClick={() => setAccion({ tipo: 'confirmar' })}>
-                Confirmar
-              </button>
-            )}
-            {['PENDIENTE', 'CONFIRMADA'].includes(r.estado) && (
-              <button type="button" className="boton boton-suave-peligro" onClick={() => setAccion({ tipo: 'cancelar' })}>
-                Cancelar reservación
-              </button>
-            )}
-          </>
+          solicitud ? undefined : (
+            <>
+              {r.estado === 'PENDIENTE' && (
+                <button type="button" className="boton boton-verde" onClick={() => setAccion({ tipo: 'confirmar' })}>
+                  Confirmar
+                </button>
+              )}
+              {['PENDIENTE', 'CONFIRMADA'].includes(r.estado) && (
+                <button type="button" className="boton boton-suave-peligro" onClick={() => setAccion({ tipo: 'cancelar' })}>
+                  Cancelar reservación
+                </button>
+              )}
+            </>
+          )
         }
       />
 
       {aviso && (
         <Aviso tipo={aviso.tipo} onCerrar={() => setAviso(null)}>
           {aviso.texto}
+        </Aviso>
+      )}
+
+      {solicitud && (
+        <section className="solicitud-pendiente" aria-label="Solicitud por responder">
+          <div>
+            <h2>Solicitud del cliente por responder</h2>
+            <p>
+              <strong>{r.propietario}</strong> pidió {r.servicio.toLowerCase()} para <strong>{r.mascota}</strong> del{' '}
+              {fechaHora(r.fecha_inicio)} al {fechaHora(r.fecha_fin)} ({moneda(r.monto_total)}). Revisa los datos y decide si
+              la aceptas. Mientras no la respondas no se pueden registrar entradas, asistencias ni pagos.
+            </p>
+          </div>
+          <div className="solicitud-acciones">
+            <button type="button" className="boton boton-verde" onClick={() => setAccion({ tipo: 'confirmar' })}>
+              Aceptar solicitud
+            </button>
+            <button type="button" className="boton boton-suave-peligro" onClick={() => setRechazando(true)}>
+              Rechazar
+            </button>
+          </div>
+        </section>
+      )}
+
+      {r.motivo_rechazo && r.estado === 'CANCELADA' && (
+        <Aviso tipo="alerta">
+          <strong>Solicitud rechazada.</strong> Motivo que ve el cliente: «{r.motivo_rechazo}»
         </Aviso>
       )}
 
@@ -220,7 +269,9 @@ export default function ReservacionDetalle() {
                 )}
                 {h.estado === 'PENDIENTE' && activa && !puedeEntrar && (
                   <p className="texto-suave texto-chico">
-                    La entrada se puede registrar desde el {fecha(r.fecha_inicio)} y antes del día de salida.
+                    {solicitud
+                      ? 'Acepta la solicitud para poder registrar la entrada.'
+                      : `La entrada se puede registrar desde el ${fecha(r.fecha_inicio)} y antes del día de salida.`}
                   </p>
                 )}
                 <div className="acciones-bloque">
@@ -271,7 +322,7 @@ export default function ReservacionDetalle() {
                         <td>{hora(a.hora_entrada)}</td>
                         <td>{hora(a.hora_salida)}</td>
                         <td>
-                          {activa && (
+                          {activa && !solicitud && (
                             <div className="acciones-fila">
                               {a.estado === 'PROGRAMADO' && a.fecha === diaHoy && (
                                 <button
@@ -314,6 +365,7 @@ export default function ReservacionDetalle() {
 
         <Pagos
           r={r}
+          bloqueado={solicitud}
           esAdmin={usuario?.rol === 'ADMIN'}
           onPagado={(d, monto) => {
             setDatos(d)
@@ -328,16 +380,31 @@ export default function ReservacionDetalle() {
         onCerrar={() => setAccion(null)}
         onConfirmar={ejecutar}
         peligro={accion?.tipo === 'cancelar' || accion?.tipo === 'anular'}
-        {...textosConfirmacion(accion, r)}
+        {...textosConfirmacion(accion, r, solicitud)}
+      />
+
+      <ModalRechazo
+        reserva={rechazando ? r : null}
+        onCerrar={() => setRechazando(false)}
+        onRechazada={(d) => {
+          setDatos(d)
+          setAviso({ tipo: 'ok', texto: 'Solicitud rechazada. El cliente verá el motivo en su cuenta y el cupo quedó libre.' })
+        }}
       />
     </div>
   )
 }
 
-function textosConfirmacion(accion: AccionPendiente | null, r: Detalle) {
+function textosConfirmacion(accion: AccionPendiente | null, r: Detalle, solicitud: boolean) {
   switch (accion?.tipo) {
     case 'confirmar':
-      return { titulo: 'Confirmar reservación', mensaje: `Se confirmará la reservación de ${r.mascota}.`, textoConfirmar: 'Confirmar' }
+      return solicitud
+        ? {
+            titulo: 'Aceptar solicitud',
+            mensaje: `Se aceptará la solicitud de ${r.mascota}. ${r.propietario} la verá como confirmada en su cuenta.`,
+            textoConfirmar: 'Aceptar solicitud',
+          }
+        : { titulo: 'Confirmar reservación', mensaje: `Se confirmará la reservación de ${r.mascota}.`, textoConfirmar: 'Confirmar' }
     case 'cancelar':
       return {
         titulo: 'Cancelar reservación',
@@ -373,11 +440,14 @@ function textosConfirmacion(accion: AccionPendiente | null, r: Detalle) {
 
 function Pagos({
   r,
+  bloqueado,
   esAdmin,
   onPagado,
   onAnular,
 }: {
   r: Detalle
+  // Solicitud del portal sin aceptar: todavia no se cobra
+  bloqueado: boolean
   esAdmin: boolean
   onPagado: (d: Detalle, monto: number) => void
   onAnular: (idPago: number, monto: number) => void
@@ -386,7 +456,7 @@ function Pagos({
   const [metodo, setMetodo] = useState<MetodoPago>('EFECTIVO')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const puedeCobrar = r.estado !== 'CANCELADA' && r.saldo > 0
+  const puedeCobrar = !bloqueado && r.estado !== 'CANCELADA' && r.saldo > 0
 
   const pagar = async (e: FormEvent) => {
     e.preventDefault()
@@ -427,6 +497,10 @@ function Pagos({
           <span>Saldo</span>
           <strong>{moneda(r.saldo)}</strong>
         </div>
+
+        {bloqueado && (
+          <p className="texto-suave texto-chico">Podrás registrar pagos cuando aceptes la solicitud.</p>
+        )}
 
         {puedeCobrar && (
           <form className="form-pago" onSubmit={pagar}>

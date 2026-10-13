@@ -1,7 +1,7 @@
 
 import "dotenv/config";
 import app from "./app.js";
-import { testConnection } from "./config/database.js";
+import { actualizarEsquema, testConnection } from "./config/database.js";
 
 const PORT = Number(process.env.PORT) || 3000;
 
@@ -9,6 +9,7 @@ const PORT = Number(process.env.PORT) || 3000;
 async function startServer() {
   try {
     await testConnection();
+    await actualizarEsquema();
 
     // Iniciar el servidor
     app.listen(PORT, () => {

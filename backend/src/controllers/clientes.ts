@@ -35,11 +35,6 @@ const registroSchema = z.object({
   direccion: textoOpcional(255),
 });
 
-const loginSchema = z.object({
-  correo: z.string().trim().toLowerCase().min(1),
-  password: z.string().min(1),
-});
-
 const perfilSchema = z.object({
   nombre: textoRequerido(100),
   apellido: textoRequerido(100),
@@ -110,28 +105,6 @@ export async function registro(req: Request, res: Response) {
   });
 
   res.status(201).json({ success: true, data: respuestaSesion(datos) });
-}
-
-export async function login(req: Request, res: Response) {
-  const { correo, password } = loginSchema.parse(req.body);
-  const [[c]] = await pool.query<RowDataPacket[]>(
-    `SELECT c.id_cuenta, c.id_propietario, c.correo, c.password_hash, c.activo, p.nombre, p.apellido
-     FROM cuentas_cliente c JOIN propietarios p ON p.id_propietario = c.id_propietario
-     WHERE c.correo = ?`,
-    [correo]
-  );
-  const valido = c && c.activo && (await bcrypt.compare(password, c.password_hash));
-  if (!valido) throw new HttpError(401, "Correo o contrasena incorrectos");
-
-  res.json({
-    success: true,
-    data: respuestaSesion({
-      id_cuenta: c.id_cuenta,
-      id_propietario: c.id_propietario,
-      nombre: `${c.nombre} ${c.apellido}`,
-      correo: c.correo,
-    }),
-  });
 }
 
 // Datos del dueno y sus perros

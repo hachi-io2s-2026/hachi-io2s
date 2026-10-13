@@ -12,35 +12,89 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { csv, fecha, moneda, numero } from "./utilidades";
+import { csv, fecha, moneda, nombreServicio, numero } from "./utilidades";
+// Semáforo de un indicador: el color siempre va acompañado de texto o símbolo
+export type Tono = "bueno" | "alerta" | "malo";
+export interface Hallazgo {
+  tono?: Tono;
+  texto: ReactNode;
+}
+const MARCAS: Record<Tono | "info", string> = {
+  bueno: "✓",
+  alerta: "!",
+  malo: "✕",
+  info: "i",
+};
 export function Tarjeta({
   titulo,
   valor,
   nota,
+  ayuda,
+  tono,
 }: {
   titulo: string;
   valor: string;
   nota?: string;
+  ayuda?: string;
+  tono?: Tono;
 }) {
   return (
-    <article className="rep-kpi">
+    <article className={"rep-kpi" + (tono ? ` rep-kpi--${tono}` : "")}>
       <span>{titulo}</span>
       <strong>{valor}</strong>
       {nota && <small>{nota}</small>}
+      {ayuda && <p className="rep-ayuda">{ayuda}</p>}
     </article>
   );
 }
 export function Bloque({
   titulo,
+  ayuda,
   children,
 }: {
   titulo: string;
+  ayuda?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section className="rep-bloque">
       <h2>{titulo}</h2>
+      {ayuda && <p className="rep-ayuda">{ayuda}</p>}
       {children}
+    </section>
+  );
+}
+// Introducción de cada pestaña: qué pregunta del negocio responde
+export function Guia({
+  pregunta,
+  children,
+}: {
+  pregunta: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rep-guia rep-ayuda">
+      <strong>{pregunta}</strong>
+      <div>{children}</div>
+    </div>
+  );
+}
+// Conclusiones en lenguaje simple calculadas a partir de los datos
+export function Lectura({ hallazgos }: { hallazgos: Hallazgo[] }) {
+  if (!hallazgos.length) return null;
+  return (
+    <section className="rep-lectura" aria-label="Lectura rápida">
+      <h3>Lectura rápida</h3>
+      <ul>
+        {hallazgos.map((h, i) => (
+          <li key={i} className={`rep-tono-${h.tono ?? "info"}`}>
+            <span className="rep-marca" aria-hidden="true">
+              {MARCAS[h.tono ?? "info"]}
+            </span>
+            <span>{h.texto}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -54,7 +108,8 @@ export function Tabla<T extends object>({
   columnas: {
     clave: keyof T;
     nombre: string;
-    formato?: "moneda" | "fecha" | "numero" | "porcentaje";
+    formato?: "moneda" | "fecha" | "numero" | "porcentaje" | "servicio";
+    ayuda?: string;
   }[];
 }) {
   const mostrar = (v: unknown, f?: string) =>
@@ -68,9 +123,12 @@ export function Tabla<T extends object>({
             ? v == null
               ? "—"
               : numero(v) + "%"
-            : Array.isArray(v)
-              ? v.join(", ")
-              : String(v ?? "—");
+            : f === "servicio"
+              ? nombreServicio(v)
+              : Array.isArray(v)
+                ? v.join(", ")
+                : String(v ?? "—");
+  const conAyuda = columnas.filter((c) => c.ayuda);
   const exportar = () => {
     const blob = new Blob(
         [
@@ -108,7 +166,11 @@ export function Tabla<T extends object>({
           <thead>
             <tr>
               {columnas.map((c) => (
-                <th key={String(c.clave)} className="sticky top-0">
+                <th
+                  key={String(c.clave)}
+                  className="sticky top-0"
+                  title={c.ayuda}
+                >
                   {c.nombre}
                 </th>
               ))}
@@ -135,6 +197,19 @@ export function Tabla<T extends object>({
           </tbody>
         </table>
       </div>
+      {conAyuda.length > 0 && (
+        <details className="rep-ayuda rep-glosario">
+          <summary>¿Qué significa cada columna?</summary>
+          <dl>
+            {conAyuda.map((c) => (
+              <div key={String(c.clave)}>
+                <dt>{c.nombre}</dt>
+                <dd>{c.ayuda}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+      )}
     </div>
   );
 }

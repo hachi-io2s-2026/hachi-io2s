@@ -7,7 +7,7 @@ import { IconoCalendario, IconoFlecha, IconoHuella, IconoTarjeta } from '../comp
 import { Aviso, Avatar, Cargando, Estado } from '../panel/ui'
 import { useCarga } from '../panel/useCarga'
 import { fecha, hora, moneda, unidadTexto } from '../utils/formato'
-import { explicacionEstado } from './estados'
+import { estadoCliente, explicacionEstado } from './estados'
 
 const ACTIVAS = ['PENDIENTE', 'CONFIRMADA', 'EN_CURSO']
 
@@ -63,7 +63,7 @@ export default function InicioCliente() {
                   {fecha(proxima.fecha_inicio)}, {hora(proxima.fecha_inicio)}
                 </span>
                 <span className="portal-tarjeta-estado">
-                  <Estado valor={proxima.estado} />
+                  <Estado valor={estadoCliente(proxima)} />
                 </span>
               </>
             ) : (
@@ -129,7 +129,7 @@ export default function InicioCliente() {
                       </span>
                       <span className="portal-lista-ayuda">{explicacionEstado(r)}</span>
                     </div>
-                    <Estado valor={r.estado} />
+                    <Estado valor={estadoCliente(r)} />
                     <IconoFlecha width={16} height={16} className="portal-lista-flecha" />
                   </Link>
                 </li>

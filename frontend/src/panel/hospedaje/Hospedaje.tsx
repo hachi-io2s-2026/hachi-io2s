@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { api } from '../../api/client'
-import type { CobroSalida, EstadoHospedaje, HospedajeFila, ReservacionDetalle } from '../../api/tipos'
+import { esSolicitudSinResponder, type CobroSalida, type EstadoHospedaje, type HospedajeFila, type ReservacionDetalle } from '../../api/tipos'
 import { diferenciaDias, fecha, fechaHora, hoy, moneda, unidadTexto } from '../../utils/formato'
 import { Aviso, Avatar, Cargando, Confirmar, Encabezado, Paginacion, Vacio } from '../ui'
 import { useCarga } from '../useCarga'
@@ -37,8 +37,10 @@ export default function Hospedaje() {
   const filas = porEstado(pestana)
   const pag = usePaginacion(filas, pestana)
 
+  const sinResponder = (h: HospedajeFila) => esSolicitudSinResponder(h.estado_reservacion, h.origen_reservacion)
   const puedeEntrar = (h: HospedajeFila) =>
     ['PENDIENTE', 'CONFIRMADA'].includes(h.estado_reservacion) &&
+    !sinResponder(h) &&
     diaHoy >= h.fecha_inicio.slice(0, 10) &&
     diaHoy < h.fecha_fin.slice(0, 10)
 
@@ -167,7 +169,13 @@ export default function Hospedaje() {
                               </button>
                             ) : (
                               <span className="texto-suave texto-chico">
-                                {diaHoy < h.fecha_inicio.slice(0, 10) ? `Llega el ${fecha(h.fecha_inicio)}` : 'Fuera de fecha'}
+                                {sinResponder(h) ? (
+                                  <Link to={`/panel/reservaciones/${h.id_reservacion}`}>Solicitud por aceptar</Link>
+                                ) : diaHoy < h.fecha_inicio.slice(0, 10) ? (
+                                  `Llega el ${fecha(h.fecha_inicio)}`
+                                ) : (
+                                  'Fuera de fecha'
+                                )}
                               </span>
                             ))}
                           {h.estado === 'HOSPEDADO' && (

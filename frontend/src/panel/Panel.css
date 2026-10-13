@@ -470,3 +470,17 @@
     font-size: 1.55rem;
   }
 }
+
+/* Nombre de la marca con la tipografia y el color del logo */
+.panel-marca span,
+.portal-marca span {
+  font-family: 'Quicksand', var(--fuente);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #244c40;
+}
+
+.panel-marca small,
+.portal-marca small {
+  font-family: var(--fuente);
+}

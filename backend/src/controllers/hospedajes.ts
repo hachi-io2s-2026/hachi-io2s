@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { z } from "zod";
 import { pool } from "../config/database.js";
+import { exigirSolicitudAceptada } from "../config/reglas.js";
 import { redondear } from "../services/reservas.js";
 import { ahora, diaDe, diferenciaDias, hoy } from "../utils/fechas.js";
 import { HttpError, noEncontrado } from "../utils/httpError.js";
@@ -20,7 +21,8 @@ const observacionesSchema = z.object({
 });
 
 const SELECT_HOSPEDAJE = `
-  SELECT h.*, r.fecha_inicio, r.fecha_fin, r.estado AS estado_reservacion, r.monto_total,
+  SELECT h.*, r.fecha_inicio, r.fecha_fin, r.estado AS estado_reservacion,
+    r.origen AS origen_reservacion, r.monto_total,
     r.id_mascota, m.nombre AS mascota, m.raza,
     CONCAT(p.nombre, ' ', p.apellido) AS propietario, p.telefono AS telefono_propietario
   FROM hospedajes h
@@ -52,7 +54,7 @@ export async function listar(req: Request, res: Response) {
 async function bloquearHospedaje(conn: PoolConnection, id: number) {
   const [[fila]] = await conn.query<RowDataPacket[]>(
     `SELECT h.id_hospedaje, h.id_reservacion, h.estado, r.estado AS estado_reservacion,
-       r.fecha_inicio, r.fecha_fin, r.monto_total, t.precio AS precio_unitario
+       r.origen, r.fecha_inicio, r.fecha_fin, r.monto_total, t.precio AS precio_unitario
      FROM hospedajes h
      JOIN reservaciones r ON r.id_reservacion = h.id_reservacion
      JOIN tarifas t ON t.id_tarifa = r.id_tarifa
@@ -78,6 +80,7 @@ export async function registrarEntrada(req: Request, res: Response) {
     if (!["PENDIENTE", "CONFIRMADA"].includes(h.estado_reservacion)) {
       throw new HttpError(409, `La reservacion esta ${h.estado_reservacion}`);
     }
+    exigirSolicitudAceptada({ estado: h.estado_reservacion, origen: h.origen });
     const diaHoy = hoy();
     if (diaHoy < diaDe(h.fecha_inicio)) {
       throw new HttpError(409, `La reservacion inicia el ${diaDe(h.fecha_inicio)}`);

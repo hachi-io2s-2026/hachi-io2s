@@ -54,8 +54,7 @@ export default function Registro() {
     <div className="login">
       <div className="login-panel">
         <Link to="/" className="login-marca">
-          <img src="/logo.svg" alt="" width="32" height="32" />
-          HACHI
+          <img src="/logo-completo.png" alt="hachi · hotel canino" width="120" height="50" />
         </Link>
 
         <div className="login-contenido registro-contenido">

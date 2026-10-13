@@ -3,6 +3,7 @@ import type { Rol } from "../auth/contexto";
 import {
   IconoAjustes,
   IconoCalendario,
+  IconoGrafica,
   IconoInicio,
   IconoLuna,
   IconoSol,
@@ -53,7 +54,7 @@ export const MODULOS: Modulo[] = [
     ruta: "/panel/reportes",
     titulo: "Reportes",
     descripcion: "Finanzas, capacidad y optimización de operaciones.",
-    icono: <IconoCalendario width={19} height={19} />,
+    icono: <IconoGrafica width={19} height={19} />,
   },
   {
     ruta: "/panel/configuracion",

@@ -44,6 +44,8 @@ const filtrosSchema = z.object({
 
 const estadoSchema = z.object({
   estado: z.enum(["CONFIRMADA", "CANCELADA"]),
+  // Motivo del rechazo de una solicitud del portal; el cliente lo ve en su cuenta
+  motivo: textoOpcional(500),
 });
 
 const TRANSICIONES: Record<"CONFIRMADA" | "CANCELADA", EstadoReservacion[]> = {
@@ -241,11 +243,11 @@ export async function crear(req: Request, res: Response) {
 
 export async function cambiarEstado(req: Request, res: Response) {
   const { id } = idParams.parse(req.params);
-  const { estado } = estadoSchema.parse(req.body);
+  const { estado, motivo } = estadoSchema.parse(req.body);
 
   await enTransaccion(async (conn) => {
     const [[reserva]] = await conn.query<RowDataPacket[]>(
-      `SELECT estado FROM reservaciones WHERE id_reservacion = ? FOR UPDATE`,
+      `SELECT estado, origen FROM reservaciones WHERE id_reservacion = ? FOR UPDATE`,
       [id]
     );
     if (!reserva) throw noEncontrado("Reservacion");
@@ -257,7 +259,17 @@ export async function cambiarEstado(req: Request, res: Response) {
       );
     }
 
-    await conn.query(`UPDATE reservaciones SET estado = ? WHERE id_reservacion = ?`, [estado, id]);
+    // Cancelar una solicitud del portal que aun no se acepto es rechazarla: hay que explicar por que
+    const esRechazo =
+      estado === "CANCELADA" && reserva.origen === "CLIENTE" && reserva.estado === "PENDIENTE";
+    if (esRechazo && (!motivo || motivo.length < 5)) {
+      throw new HttpError(400, "Escribe el motivo del rechazo (minimo 5 caracteres); el cliente lo vera");
+    }
+
+    await conn.query(
+      `UPDATE reservaciones SET estado = ?, motivo_rechazo = ? WHERE id_reservacion = ?`,
+      [estado, esRechazo ? motivo : null, id]
+    );
   });
 
   res.json({ success: true, data: await buscarDetalle(id) });

@@ -4,8 +4,8 @@ import './Navbar.css'
 
 const ENLACES = [
   { href: '#servicios', texto: 'Servicios' },
+  { href: '#nosotros', texto: 'Nosotros' },
   { href: '#proceso', texto: 'Proceso' },
-  { href: '#galeria', texto: 'Galería' },
   { href: '#tarifas', texto: 'Tarifas' },
   { href: '#preguntas', texto: 'Preguntas' },
 ]
@@ -23,8 +23,7 @@ export default function Navbar({ onIniciarSesion, textoBoton = 'Iniciar sesión'
     <header className="navbar">
       <div className="navbar-contenido">
         <a href="#inicio" className="marca" onClick={cerrar}>
-          <img src="/logo.svg" alt="" width="32" height="32" />
-          <span>HACHI</span>
+          <img src="/logo-completo.png" alt="hachi · hotel canino" width="130" height="54" />
         </a>
 
         <button

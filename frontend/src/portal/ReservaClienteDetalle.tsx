@@ -5,7 +5,7 @@ import type { ReservacionDetalle } from '../api/tipos'
 import { Aviso, Cargando, Confirmar, Encabezado, Estado } from '../panel/ui'
 import { useCarga } from '../panel/useCarga'
 import { fechaCorta, fechaHora, hora, moneda, unidadTexto } from '../utils/formato'
-import { explicacionEstado } from './estados'
+import { estadoCliente, explicacionEstado } from './estados'
 import '../panel/reservaciones/Reservaciones.css'
 
 const METODOS: Record<string, string> = { EFECTIVO: 'Efectivo', TARJETA: 'Tarjeta', TRANSFERENCIA: 'Transferencia' }
@@ -40,7 +40,7 @@ export default function ReservaClienteDetalle() {
         volver={{ a: '/mi-cuenta/reservas', texto: 'Mis reservas' }}
         titulo={
           <span className="titulo-con-estado">
-            {r.mascota} · {r.servicio} <Estado valor={r.estado} />
+            {r.mascota} · {r.servicio} <Estado valor={estadoCliente(r)} />
           </span>
         }
         subtitulo={`Reserva #${r.id_reservacion}`}
@@ -59,7 +59,7 @@ export default function ReservaClienteDetalle() {
         </Aviso>
       )}
 
-      <div className={`portal-estado portal-estado-${r.estado.toLowerCase()}`}>{explicacionEstado(r)}</div>
+      <div className={`portal-estado portal-estado-${estadoCliente(r).toLowerCase()}`}>{explicacionEstado(r)}</div>
 
       <div className="portal-columnas">
         <section className="caja">
