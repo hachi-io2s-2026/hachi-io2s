@@ -78,7 +78,6 @@ Abrir **MySQL Workbench**, conectarse al servidor MySQL local y ejecutar, en ord
 2. `database/02_seed.sql`: carga datos de prueba (servicios, tarifas, capacidades, propietarios y mascotas ficticios). Se puede ejecutar varias veces sin duplicar datos.
 3. `database/03_portal_clientes.sql`: agrega el portal del cliente (tabla `cuentas_cliente` y columna `origen` en `reservaciones`). Solo agrega, no borra datos, y se puede ejecutar varias veces.
 
-> Si ya tenías creada `hachi_db` con una versión anterior, **basta con ejecutar `03_portal_clientes.sql`**: actualiza la base sin perder datos. Los `CREATE TABLE IF NOT EXISTS` de `01` no modifican tablas existentes.
 
 ### 6.2 Credenciales locales
 
@@ -161,34 +160,6 @@ npm run dev
 ```
 
 Arranca el backend (puerto 3000) y el frontend (http://localhost:5173) en la misma terminal. Se detienen juntos con **Ctrl + C**. Si el backend se cierra al iniciar, revisar que el servicio de MySQL esté encendido.
-
-### 7.6 Módulos del sistema
-
-El inicio de sesión (`/login`) tiene dos pestañas: **Soy cliente** y **Personal del hotel**.
-
-**Personal del hotel** → entra al panel (`/panel`):
-
-| Módulo | Qué permite hacer |
-| --- | --- |
-| Hoy | Entradas y salidas del día con botón para registrarlas, reservas por confirmar (incluidas las del portal), alertas y próximas llegadas. |
-| Dueños y perros | Buscar, registrar y editar dueños; registrar y editar la ficha de sus perros; dar de baja o reactivar perros; ver sus reservaciones. |
-| Reservaciones | Listar con filtros; crear reservas con cotización y cupos por día en vivo; confirmar, cancelar, registrar entrada/salida y cobrar desde el detalle. |
-| Hospedaje | Ver perros por llegar, hospedados y finalizados; registrar check-in y check-out (con cálculo de noches extra y saldo). |
-| Daycare | Ver las asistencias de cada día; registrar entrada, salida o ausencia. |
-| Configuración (solo ADMIN) | Tarifas, capacidad por servicio y usuarios del sistema. |
-
-Los empleados pueden hacer todo lo anterior excepto **Configuración** y **anular pagos**, que son solo del administrador.
-
-**Clientes (dueños de perros)** → se registran en `/registro` y entran a su portal (`/mi-cuenta`):
-
-| Sección | Qué permite hacer |
-| --- | --- |
-| Inicio | Ver su próxima estancia, su saldo pendiente y sus reservas activas. |
-| Mis perros | Registrar y editar la ficha de sus perros (raza, peso, cuidados especiales). |
-| Solicitar estancia | Elegir perro, servicio y fechas; ver el precio y los cupos antes de enviar. La solicitud queda **pendiente** hasta que el hotel la confirma. |
-| Mis reservas | Ver el estado, los días de daycare y los pagos de cada reserva; cancelar solicitudes que aún estén pendientes. |
-
-Cada cliente solo ve sus propios datos. Si el dueño ya estaba registrado por recepción, al crear su cuenta con el **mismo correo y teléfono** ve a sus perros y reservas existentes. Las reservas pedidas desde el portal aparecen en el panel con la etiqueta **Portal**.
 
 ## 8. Cómo trabajar con Git y GitHub
 

@@ -1,7 +1,14 @@
 // Datos operativos del dia, armados con los endpoints que ya existen.
 // Los usa la pagina "Hoy" y el contador de pendientes del menu lateral.
 import { api } from '../api/client'
-import type { AsistenciaFila, HospedajeFila, Mascota, Reservacion, Servicio } from '../api/tipos'
+import {
+  esSolicitudSinResponder,
+  type AsistenciaFila,
+  type HospedajeFila,
+  type Mascota,
+  type Reservacion,
+  type Servicio,
+} from '../api/tipos'
 import { fecha, hoy, sumarDias } from '../utils/formato'
 
 export interface Movimiento {
@@ -83,13 +90,14 @@ export async function cargarResumenHoy(): Promise<ResumenHoy> {
   for (const h of hospedajes) {
     const llegaHoy = dia(h.fecha_inicio) === diaHoy
     if (h.estado === 'PENDIENTE' && llegaHoy && ['PENDIENTE', 'CONFIRMADA'].includes(h.estado_reservacion)) {
+      const sinResponder = esSolicitudSinResponder(h.estado_reservacion, h.origen_reservacion)
       entradas.push({
         ...base(h),
         clave: `h-e-${h.id_hospedaje}`,
         servicio: 'Hotel',
         hora: horaDe(h.fecha_inicio),
-        accion: { tipo: 'entrada', ruta: `/hospedajes/${h.id_hospedaje}/entrada` },
-        etiqueta: '',
+        accion: sinResponder ? null : { tipo: 'entrada', ruta: `/hospedajes/${h.id_hospedaje}/entrada` },
+        etiqueta: sinResponder ? 'Solicitud por aceptar' : '',
       })
     } else if (h.estado !== 'PENDIENTE' && dia(h.fecha_entrada) === diaHoy) {
       entradas.push({
@@ -123,12 +131,13 @@ export async function cargarResumenHoy(): Promise<ResumenHoy> {
     if (['CANCELADA', 'FINALIZADA'].includes(a.estado_reservacion) && a.estado === 'PROGRAMADO') continue
     const comun = { ...base(a), servicio: 'Daycare' as const }
     if (a.estado === 'PROGRAMADO') {
+      const sinResponder = esSolicitudSinResponder(a.estado_reservacion, a.origen_reservacion)
       entradas.push({
         ...comun,
         clave: `d-e-${a.id_asistencia}`,
         hora: a.hora_programada_entrada,
-        accion: { tipo: 'entrada', ruta: `/daycare/asistencias/${a.id_asistencia}/entrada` },
-        etiqueta: '',
+        accion: sinResponder ? null : { tipo: 'entrada', ruta: `/daycare/asistencias/${a.id_asistencia}/entrada` },
+        etiqueta: sinResponder ? 'Solicitud por aceptar' : '',
       })
     } else if (a.estado === 'PRESENTE' || a.estado === 'FINALIZADO') {
       entradas.push({
@@ -174,7 +183,15 @@ export async function cargarResumenHoy(): Promise<ResumenHoy> {
   }
   for (const h of hospedajes) {
     if (h.estado === 'PENDIENTE' && h.estado_reservacion === 'PENDIENTE' && dia(h.fecha_inicio) === diaHoy) {
-      alertas.push({ tipo: 'alerta', mascota: h.mascota, texto: 'llega hoy y su reserva sigue sin confirmar.', id_reservacion: h.id_reservacion })
+      alertas.push({
+        tipo: 'alerta',
+        mascota: h.mascota,
+        texto:
+          h.origen_reservacion === 'CLIENTE'
+            ? 'llega hoy y su solicitud del portal sigue sin aceptar; respóndela antes de registrar la entrada.'
+            : 'llega hoy y su reserva sigue sin confirmar.',
+        id_reservacion: h.id_reservacion,
+      })
     }
   }
   // Observaciones (alergias, medicinas...) de los perros que estan o llegan hoy

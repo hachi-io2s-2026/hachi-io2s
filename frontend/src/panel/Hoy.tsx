@@ -6,6 +6,7 @@ import { IconoActualizar, IconoAlerta, IconoEntrar, IconoHuella, IconoInfo, Icon
 import { fecha, fechaCorta, hoy, moneda, sumarDias, unidadTexto } from '../utils/formato'
 import { cargarResumenHoy, type Llegada, type Movimiento } from './resumenHoy'
 import { Aviso, Avatar, Confirmar } from './ui'
+import ModalRechazo from './reservaciones/ModalRechazo'
 import { useCarga } from './useCarga'
 import './Hoy.css'
 
@@ -28,6 +29,7 @@ export default function Hoy() {
     [],
   )
   const [accion, setAccion] = useState<Accion | null>(null)
+  const [rechazo, setRechazo] = useState<Reservacion | null>(null)
   const [aviso, setAviso] = useState<{ tipo: 'ok' | 'alerta'; texto: string; id?: number } | null>(null)
 
   useEffect(() => {
@@ -42,7 +44,13 @@ export default function Hoy() {
     if (!accion) return
     if (accion.tipo === 'confirmar') {
       await api(`/reservaciones/${accion.r.id_reservacion}/estado`, { method: 'PATCH', body: { estado: 'CONFIRMADA' } })
-      setAviso({ tipo: 'ok', texto: `Reserva de ${accion.r.mascota} confirmada.` })
+      setAviso({
+        tipo: 'ok',
+        texto:
+          accion.r.origen === 'CLIENTE'
+            ? `Solicitud de ${accion.r.mascota} aceptada; el cliente ya la ve confirmada.`
+            : `Reserva de ${accion.r.mascota} confirmada.`,
+      })
       recargar()
       return
     }
@@ -155,7 +163,11 @@ export default function Hoy() {
             />
 
             <div className="hoy-lateral">
-              <PorConfirmar reservas={datos.porConfirmar} onConfirmar={(r) => setAccion({ tipo: 'confirmar', r })} />
+              <PorConfirmar
+                reservas={datos.porConfirmar}
+                onConfirmar={(r) => setAccion({ tipo: 'confirmar', r })}
+                onRechazar={setRechazo}
+              />
 
               <section className="caja">
                 <div className="caja-encabezado caja-encabezado-ayuda">
@@ -195,6 +207,15 @@ export default function Hoy() {
         onConfirmar={ejecutar}
         {...textosConfirmacion(accion)}
       />
+
+      <ModalRechazo
+        reserva={rechazo}
+        onCerrar={() => setRechazo(null)}
+        onRechazada={(d) => {
+          setAviso({ tipo: 'ok', texto: `Solicitud de ${d.mascota} rechazada; el cliente verá el motivo.` })
+          recargar()
+        }}
+      />
     </div>
   )
 }
@@ -204,8 +225,8 @@ function textosConfirmacion(accion: Accion | null) {
   if (accion.tipo === 'confirmar') {
     const r = accion.r
     return {
-      titulo: 'Confirmar reserva',
-      textoConfirmar: 'Confirmar reserva',
+      titulo: r.origen === 'CLIENTE' ? 'Aceptar solicitud' : 'Confirmar reserva',
+      textoConfirmar: r.origen === 'CLIENTE' ? 'Aceptar solicitud' : 'Confirmar reserva',
       mensaje: `${r.mascota} (${r.propietario}) · ${r.servicio}, del ${fecha(r.fecha_inicio)} al ${fecha(r.fecha_fin)}. ${r.origen === 'CLIENTE' ? 'El cliente verá la reserva como confirmada en su portal.' : ''}`,
     }
   }
@@ -363,6 +384,10 @@ function Agenda({
                     >
                       Registrar {m.accion.tipo}
                     </button>
+                  ) : m.etiqueta === 'Solicitud por aceptar' ? (
+                    <Link to={`/panel/reservaciones/${m.id_reservacion}`} className="insignia-estado insignia-ambar">
+                      {m.etiqueta}
+                    </Link>
                   ) : (
                     <span className={`insignia-estado ${m.etiqueta === 'En casa' ? 'insignia-verde' : 'insignia-gris'}`}>{m.etiqueta}</span>
                   )}
@@ -383,7 +408,15 @@ function Agenda({
   )
 }
 
-function PorConfirmar({ reservas, onConfirmar }: { reservas: Reservacion[]; onConfirmar: (r: Reservacion) => void }) {
+function PorConfirmar({
+  reservas,
+  onConfirmar,
+  onRechazar,
+}: {
+  reservas: Reservacion[]
+  onConfirmar: (r: Reservacion) => void
+  onRechazar: (r: Reservacion) => void
+}) {
   return (
     <section className="caja">
       <div className="caja-encabezado caja-encabezado-ayuda">
@@ -409,9 +442,20 @@ function PorConfirmar({ reservas, onConfirmar }: { reservas: Reservacion[]; onCo
                   {r.servicio} · {fechaCorta(r.fecha_inicio)} · {r.unidades} {unidadTexto(r.unidad, r.unidades)}
                 </span>
               </Link>
-              <button type="button" className="boton boton-verde boton-chico" onClick={() => onConfirmar(r)}>
-                Confirmar
-              </button>
+              {r.origen === 'CLIENTE' ? (
+                <div className="acciones-fila">
+                  <button type="button" className="boton boton-verde boton-chico" onClick={() => onConfirmar(r)}>
+                    Aceptar
+                  </button>
+                  <button type="button" className="boton boton-suave-peligro boton-chico" onClick={() => onRechazar(r)}>
+                    Rechazar
+                  </button>
+                </div>
+              ) : (
+                <button type="button" className="boton boton-verde boton-chico" onClick={() => onConfirmar(r)}>
+                  Confirmar
+                </button>
+              )}
             </li>
           ))}
         </ul>

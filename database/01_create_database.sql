@@ -104,6 +104,8 @@ CREATE TABLE IF NOT EXISTS reservaciones (
     -- Quien creo la reserva: el personal del hotel o el cliente desde el portal
     origen ENUM('PERSONAL', 'CLIENTE') NOT NULL DEFAULT 'PERSONAL',
     observaciones TEXT,
+    -- Razon por la que el hotel rechazo una solicitud del portal (la ve el cliente)
+    motivo_rechazo VARCHAR(500) NULL,
     fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_reserva_mascota
         FOREIGN KEY (id_mascota) REFERENCES mascotas(id_mascota)
@@ -214,6 +216,20 @@ SET @existe := (
 SET @sentencia := IF(
     @existe = 0,
     'ALTER TABLE reservaciones ADD COLUMN origen ENUM(''PERSONAL'', ''CLIENTE'') NOT NULL DEFAULT ''PERSONAL'' AFTER estado',
+    'SELECT 1'
+);
+PREPARE paso FROM @sentencia;
+EXECUTE paso;
+DEALLOCATE PREPARE paso;
+
+-- Columna "motivo_rechazo" en reservaciones (solo si todavia no existe)
+SET @existe := (
+    SELECT COUNT(*) FROM information_schema.columns
+    WHERE table_schema = DATABASE() AND table_name = 'reservaciones' AND column_name = 'motivo_rechazo'
+);
+SET @sentencia := IF(
+    @existe = 0,
+    'ALTER TABLE reservaciones ADD COLUMN motivo_rechazo VARCHAR(500) NULL AFTER observaciones',
     'SELECT 1'
 );
 PREPARE paso FROM @sentencia;

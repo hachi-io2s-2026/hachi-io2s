@@ -91,10 +91,26 @@ export interface Hospedaje {
   observaciones: string | null
 }
 
+export type OrigenReservacion = 'PERSONAL' | 'CLIENTE'
+
+// Solicitud hecha desde el portal que el hotel todavia no acepta ni rechaza.
+// Mientras este asi no se registran entradas, ausencias ni pagos (el backend tambien lo valida).
+export const esSolicitudSinResponder = (estado: EstadoReservacion, origen: OrigenReservacion | undefined) =>
+  origen === 'CLIENTE' && estado === 'PENDIENTE'
+
+// Estado para mostrar: distingue las solicitudes sin responder y las rechazadas por el hotel
+export const estadoVisible = (r: Pick<Reservacion, 'estado' | 'origen' | 'motivo_rechazo'>) =>
+  esSolicitudSinResponder(r.estado, r.origen)
+    ? 'SOLICITUD'
+    : r.estado === 'CANCELADA' && r.motivo_rechazo
+      ? 'RECHAZADA'
+      : r.estado
+
 export interface HospedajeFila extends Hospedaje {
   fecha_inicio: string
   fecha_fin: string
   estado_reservacion: EstadoReservacion
+  origen_reservacion: OrigenReservacion
   monto_total: number
   id_mascota: number
   mascota: string
@@ -115,6 +131,7 @@ export interface Asistencia {
 
 export interface AsistenciaFila extends Asistencia {
   estado_reservacion: EstadoReservacion
+  origen_reservacion: OrigenReservacion
   hora_programada_entrada: string
   hora_programada_salida: string
   id_mascota: number
@@ -145,8 +162,10 @@ export interface Reservacion {
   monto_total: number
   estado: EstadoReservacion
   // PERSONAL: la creo recepcion; CLIENTE: la solicito el dueno desde el portal
-  origen: 'PERSONAL' | 'CLIENTE'
+  origen: OrigenReservacion
   observaciones: string | null
+  // Razon por la que el hotel rechazo la solicitud (la ve el cliente en su portal)
+  motivo_rechazo: string | null
   fecha_creacion: string
   mascota: string
   raza: string | null

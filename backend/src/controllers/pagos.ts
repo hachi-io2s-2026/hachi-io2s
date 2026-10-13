@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import type { RowDataPacket } from "mysql2/promise";
 import { z } from "zod";
 import { pool } from "../config/database.js";
+import { exigirSolicitudAceptada } from "../config/reglas.js";
 import { redondear } from "../services/reservas.js";
 import { ahora } from "../utils/fechas.js";
 import { HttpError, noEncontrado } from "../utils/httpError.js";
@@ -35,13 +36,14 @@ export async function crear(req: Request, res: Response) {
 
   await enTransaccion(async (conn) => {
     const [[reserva]] = await conn.query<RowDataPacket[]>(
-      `SELECT estado, monto_total FROM reservaciones WHERE id_reservacion = ? FOR UPDATE`,
+      `SELECT estado, origen, monto_total FROM reservaciones WHERE id_reservacion = ? FOR UPDATE`,
       [d.id_reservacion]
     );
     if (!reserva) throw noEncontrado("Reservacion");
     if (reserva.estado === "CANCELADA") {
       throw new HttpError(409, "No se pueden registrar pagos en una reservacion cancelada");
     }
+    exigirSolicitudAceptada(reserva as { estado: string; origen: string });
 
     const [[{ pagado }]] = await conn.query<RowDataPacket[]>(
       `SELECT COALESCE(SUM(monto), 0) AS pagado FROM pagos

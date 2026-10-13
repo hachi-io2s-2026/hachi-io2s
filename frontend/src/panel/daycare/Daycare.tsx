@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { api, query } from '../../api/client'
-import type { AsistenciaFila, EstadoAsistencia } from '../../api/tipos'
+import { esSolicitudSinResponder, type AsistenciaFila, type EstadoAsistencia } from '../../api/tipos'
 import { IconoFlecha } from '../../components/Iconos'
 import { fecha, fechaCorta, hora, hoy, sumarDias } from '../../utils/formato'
 import { Aviso, Avatar, Cargando, Confirmar, Encabezado, Estado, Vacio } from '../ui'
@@ -40,6 +40,7 @@ export default function Daycare() {
 
   const cuenta = (estado: EstadoAsistencia) => (datos ?? []).filter((a) => a.estado === estado).length
   const activa = (a: AsistenciaFila) => !['CANCELADA', 'FINALIZADA'].includes(a.estado_reservacion)
+  const sinResponder = (a: AsistenciaFila) => esSolicitudSinResponder(a.estado_reservacion, a.origen_reservacion)
 
   const ejecutar = async () => {
     if (!accion) return
@@ -145,7 +146,12 @@ export default function Daycare() {
                     <td>{hora(a.hora_entrada)}</td>
                     <td>{hora(a.hora_salida)}</td>
                     <td>
-                      {activa(a) && (
+                      {sinResponder(a) && (
+                        <Link to={`/panel/reservaciones/${a.id_reservacion}`} className="texto-chico">
+                          Solicitud por aceptar
+                        </Link>
+                      )}
+                      {activa(a) && !sinResponder(a) && (
                         <div className="acciones-fila">
                           {a.estado === 'PROGRAMADO' && dia === diaHoy && (
                             <button type="button" className="boton boton-verde boton-chico" onClick={() => setAccion({ tipo: 'entrada', fila: a })}>

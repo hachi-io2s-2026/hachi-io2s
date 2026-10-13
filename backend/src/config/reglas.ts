@@ -1,3 +1,4 @@
+import { HttpError } from "../utils/httpError.js";
 
 // Reglas de operacion de HACHI.
 // Son SUPUESTOS DEL PROTOTIPO: ajustarlos cuando el equipo confirme las reglas reales.
@@ -19,3 +20,14 @@ export const REGLAS = {
 
 // Estados de reservacion que ocupan cupo
 export const ESTADOS_ACTIVOS = ["PENDIENTE", "CONFIRMADA", "EN_CURSO"] as const;
+
+// Una solicitud hecha por el cliente desde el portal queda PENDIENTE hasta que el hotel
+// la acepta o la rechaza. Mientras tanto no se registran entradas, ausencias ni pagos.
+export function exigirSolicitudAceptada(r: { estado: string; origen: string }) {
+  if (r.origen === "CLIENTE" && r.estado === "PENDIENTE") {
+    throw new HttpError(
+      409,
+      "Esta reserva es una solicitud del cliente que todavia no fue aceptada. Aceptala primero."
+    );
+  }
+}

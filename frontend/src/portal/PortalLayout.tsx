@@ -30,7 +30,7 @@ export default function PortalLayout() {
           <Link to="/mi-cuenta" className="portal-marca">
             <img src="/logo.svg" alt="" width="32" height="32" />
             <span>
-              HACHI
+              hachi
               <small>Mi cuenta</small>
             </span>
           </Link>

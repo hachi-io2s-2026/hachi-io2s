@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router'
 import { useSesion } from './auth/contexto'
 import RutaProtegida, { RutaCliente } from './auth/RutaProtegida'
@@ -8,6 +8,7 @@ import Daycare from './panel/daycare/Daycare'
 import Hospedaje from './panel/hospedaje/Hospedaje'
 import Hoy from './panel/Hoy'
 import PanelLayout from './panel/PanelLayout'
+import { Cargando } from './panel/ui'
 import PropietarioDetalle from './panel/propietarios/PropietarioDetalle'
 import Propietarios from './panel/propietarios/Propietarios'
 import NuevaReservacion from './panel/reservaciones/NuevaReservacion'
@@ -21,6 +22,9 @@ import PerrosCliente from './portal/PerrosCliente'
 import PortalLayout from './portal/PortalLayout'
 import ReservaClienteDetalle from './portal/ReservaClienteDetalle'
 import ReservasCliente from './portal/ReservasCliente'
+
+// Reportes carga recharts: se descarga solo al abrir el modulo
+const Reportes = lazy(() => import('./reportes/Reportes'))
 
 // Pagina informativa publica
 function PaginaPublica() {
@@ -75,6 +79,15 @@ function App() {
 
           <Route path="propietarios" element={<Propietarios />} />
           <Route path="propietarios/:id" element={<PropietarioDetalle />} />
+
+          <Route
+            path="reportes"
+            element={
+              <Suspense fallback={<Cargando />}>
+                <Reportes />
+              </Suspense>
+            }
+          />
 
           {/* Solo administradores */}
           <Route element={<RutaProtegida roles={['ADMIN']} />}>

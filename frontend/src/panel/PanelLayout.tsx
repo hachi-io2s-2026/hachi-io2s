@@ -50,7 +50,7 @@ export default function PanelLayout() {
         <Link to="/panel" className="panel-marca" onClick={cerrarMenu}>
           <img src="/logo.svg" alt="" width="34" height="34" />
           <span>
-            HACHI
+            hachi
             <small>Panel de recepción</small>
           </span>
         </Link>

@@ -182,6 +182,128 @@
 .rep-periodo {
   font-weight: 600;
 }
+/* Explicaciones para administradores nuevos; se ocultan con el interruptor */
+.reportes .rep-ayuda {
+  color: #4f6159;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.rep-sin-ayuda .rep-ayuda {
+  display: none !important;
+}
+.reportes label.rep-interruptor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.reportes label small {
+  font-weight: 400;
+}
+.rep-kpi--bueno {
+  border-left: 4px solid #2e8b57;
+}
+.rep-kpi--alerta {
+  border-left: 4px solid #c98a1a;
+  background: #fff8ea;
+}
+.rep-kpi--malo {
+  border-left: 4px solid #c43b39;
+  background: #fdf0ef;
+}
+.reportes .rep-guia {
+  display: grid;
+  gap: 6px;
+  margin: 18px 0;
+  padding: 16px 18px;
+  border: 1px solid #cfe2ea;
+  border-radius: 12px;
+  background: #eef6f9;
+  color: #273830;
+  font-size: 0.9rem;
+}
+.rep-guia strong {
+  font-size: 1.05rem;
+}
+.rep-lectura {
+  margin: 18px 0;
+  padding: 14px 18px;
+  border: 1px solid #dce6df;
+  border-radius: 12px;
+  background: #fbfdfb;
+}
+.rep-lectura h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+.rep-lectura ul {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rep-lectura li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+.rep-marca {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e3eae5;
+  color: #41524a;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.rep-tono-bueno .rep-marca {
+  background: #d7efdd;
+  color: #1d6b43;
+}
+.rep-tono-alerta .rep-marca {
+  background: #fcebc8;
+  color: #8a5a00;
+}
+.rep-tono-malo .rep-marca {
+  background: #f8d9d7;
+  color: #a32f2d;
+}
+.reportes th[title] {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+.reportes .rep-glosario {
+  margin-top: 10px;
+}
+.rep-glosario dl {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 0;
+}
+.rep-glosario dt {
+  display: inline;
+  font-weight: 600;
+  color: #273830;
+}
+.rep-glosario dt::after {
+  content: ": ";
+}
+.rep-glosario dd {
+  display: inline;
+  margin: 0;
+}
+.rep-experto {
+  margin-top: 18px;
+  font-size: 0.9rem;
+}
 .rep-vacio {
   padding: 25px;
   text-align: center;
@@ -222,6 +344,7 @@
   .panel-fondo,
   .rep-controles,
   .rep-tabs,
+  .rep-glosario,
   .rep-tabla button {
     display: none !important;
   }

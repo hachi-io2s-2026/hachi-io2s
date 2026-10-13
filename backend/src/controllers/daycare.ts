@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { z } from "zod";
 import { pool } from "../config/database.js";
+import { exigirSolicitudAceptada } from "../config/reglas.js";
 import { ahora, hoy } from "../utils/fechas.js";
 import { HttpError, noEncontrado } from "../utils/httpError.js";
 import { enTransaccion } from "../utils/transaccion.js";
@@ -18,7 +19,7 @@ const observacionesSchema = z.object({
 });
 
 const SELECT_ASISTENCIA = `
-  SELECT a.*, r.estado AS estado_reservacion,
+  SELECT a.*, r.estado AS estado_reservacion, r.origen AS origen_reservacion,
     DATE_FORMAT(r.fecha_inicio, '%H:%i') AS hora_programada_entrada,
     DATE_FORMAT(r.fecha_fin, '%H:%i') AS hora_programada_salida,
     r.id_mascota, m.nombre AS mascota, m.raza,
@@ -39,7 +40,8 @@ async function buscarPorId(id: number) {
 
 async function bloquearAsistencia(conn: PoolConnection, id: number) {
   const [[fila]] = await conn.query<RowDataPacket[]>(
-    `SELECT a.id_asistencia, a.id_reservacion, a.fecha, a.estado, r.estado AS estado_reservacion
+    `SELECT a.id_asistencia, a.id_reservacion, a.fecha, a.estado, r.estado AS estado_reservacion,
+       r.origen
      FROM asistencias_daycare a
      JOIN reservaciones r ON r.id_reservacion = a.id_reservacion
      WHERE a.id_asistencia = ?
@@ -50,6 +52,7 @@ async function bloquearAsistencia(conn: PoolConnection, id: number) {
   if (["CANCELADA", "FINALIZADA"].includes(fila.estado_reservacion)) {
     throw new HttpError(409, `La reservacion esta ${fila.estado_reservacion}`);
   }
+  exigirSolicitudAceptada({ estado: fila.estado_reservacion, origen: fila.origen });
   return fila;
 }
 

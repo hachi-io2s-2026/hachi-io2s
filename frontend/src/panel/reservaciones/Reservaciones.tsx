@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { api, query } from '../../api/client'
-import type { EstadoReservacion, Reservacion, Servicio } from '../../api/tipos'
+import { estadoVisible, type EstadoReservacion, type Reservacion, type Servicio } from '../../api/tipos'
 import { fecha, hora, moneda, unidadTexto } from '../../utils/formato'
 import { Aviso, Avatar, Cargando, Encabezado, Estado, Paginacion, Vacio } from '../ui'
 import { useCarga, useRetrasado } from '../useCarga'
@@ -176,7 +176,7 @@ export default function Reservaciones() {
                     </td>
                     <td>
                       <div className="celda-estado">
-                        <Estado valor={r.estado} />
+                        <Estado valor={estadoVisible(r)} />
                         {r.origen === 'CLIENTE' && (
                           <span className="chip-origen" title="El cliente la solicitó desde su portal">
                             Portal

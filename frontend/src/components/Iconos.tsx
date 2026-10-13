@@ -80,6 +80,12 @@ export const IconoCalendario = (p: P) => (
   </svg>
 )
 
+export const IconoGrafica = (p: P) => (
+  <svg {...base} {...p}>
+    <path d="M4 4v16h16M8 16v-4M12 16V8M16 16v-6" />
+  </svg>
+)
+
 export const IconoUsuarios = (p: P) => (
   <svg {...base} {...p}>
     <circle cx="9" cy="8" r="3.5" />

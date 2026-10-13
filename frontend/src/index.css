@@ -28,7 +28,7 @@
 html {
   scroll-behavior: smooth;
   /* Deja espacio para el navbar fijo al saltar a una seccion */
-  scroll-padding-top: 72px;
+  scroll-padding-top: 78px;
 }
 
 body {

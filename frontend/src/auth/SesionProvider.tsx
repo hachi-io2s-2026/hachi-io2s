@@ -56,27 +56,25 @@ export default function SesionProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const iniciarSesion = useCallback(async (correo: string, password: string) => {
-    const datos = await api<{ token: string; usuario: Usuario }>('/auth/login', {
-      method: 'POST',
-      body: { correo, password },
-    })
-    guardarToken(datos.token)
-    setCliente(null)
-    setUsuario(datos.usuario)
-  }, [])
-
   const entrarComoCliente = useCallback((datos: { token: string; cliente: Cliente }) => {
     guardarToken(datos.token)
     setUsuario(null)
     setCliente(datos.cliente)
   }, [])
 
-  const iniciarSesionCliente = useCallback(
+  // Un solo inicio de sesion: el backend responde si la cuenta es del personal o de un cliente
+  const iniciarSesion = useCallback(
     async (correo: string, password: string) => {
-      entrarComoCliente(
-        await api<{ token: string; cliente: Cliente }>('/cliente/login', { method: 'POST', body: { correo, password } }),
-      )
+      const datos = await api<
+        { tipo: 'personal'; token: string; usuario: Usuario } | { tipo: 'cliente'; token: string; cliente: Cliente }
+      >('/auth/login', { method: 'POST', body: { correo, password } })
+      if (datos.tipo === 'cliente') {
+        entrarComoCliente(datos)
+        return
+      }
+      guardarToken(datos.token)
+      setCliente(null)
+      setUsuario(datos.usuario)
     },
     [entrarComoCliente],
   )
@@ -89,8 +87,8 @@ export default function SesionProvider({ children }: { children: ReactNode }) {
   )
 
   const valor = useMemo(
-    () => ({ usuario, cliente, verificando, iniciarSesion, iniciarSesionCliente, registrarCliente, cerrarSesion }),
-    [usuario, cliente, verificando, iniciarSesion, iniciarSesionCliente, registrarCliente, cerrarSesion],
+    () => ({ usuario, cliente, verificando, iniciarSesion, registrarCliente, cerrarSesion }),
+    [usuario, cliente, verificando, iniciarSesion, registrarCliente, cerrarSesion],
   )
 
   return <SesionContexto.Provider value={valor}>{children}</SesionContexto.Provider>

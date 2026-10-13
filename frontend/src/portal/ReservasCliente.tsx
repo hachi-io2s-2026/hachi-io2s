@@ -6,7 +6,7 @@ import { IconoFlecha } from '../components/Iconos'
 import { Aviso, Avatar, Cargando, Encabezado, Estado } from '../panel/ui'
 import { useCarga } from '../panel/useCarga'
 import { fecha, moneda, unidadTexto } from '../utils/formato'
-import { explicacionEstado } from './estados'
+import { estadoCliente, explicacionEstado } from './estados'
 
 export default function ReservasCliente() {
   const { datos, error } = useCarga(() => api<Reservacion[]>('/cliente/reservaciones'), [])
@@ -62,7 +62,7 @@ export default function ReservasCliente() {
                       </span>
                       <span className="portal-lista-ayuda">{explicacionEstado(r)}</span>
                     </div>
-                    <Estado valor={r.estado} />
+                    <Estado valor={estadoCliente(r)} />
                     <IconoFlecha width={16} height={16} className="portal-lista-flecha" />
                   </Link>
                 </li>

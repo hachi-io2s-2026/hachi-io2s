@@ -19,7 +19,7 @@ import reportes from "./reportes.routes.js";
 const router = Router();
 const soloAdmin = requerirRol("ADMIN");
 
-// Publica
+// Publica. Un solo inicio de sesion para personal y clientes (responde el tipo de cuenta)
 router.post("/auth/login", auth.login);
 // Servicios con tarifa y capacidad vigentes (sin datos personales); la usa la pagina informativa
 router.get("/servicios", servicios.listar);
@@ -27,7 +27,6 @@ router.get("/servicios", servicios.listar);
 // ---------- Portal del cliente (cada cliente solo ve sus propios datos) ----------
 const portal = Router();
 portal.post("/registro", clientes.registro);
-portal.post("/login", clientes.login);
 portal.use(requerirCliente);
 portal.get("/me", clientes.perfil);
 portal.put("/me", clientes.actualizarPerfil);

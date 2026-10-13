@@ -23,7 +23,7 @@ export default function RutaProtegida({ roles }: Props) {
   if (verificando) return <Cargando />
   if (cliente) return <Navigate to="/mi-cuenta" replace />
   if (!usuario) {
-    return <Navigate to="/login?tipo=personal" replace state={{ desde: ubicacion.pathname }} />
+    return <Navigate to="/login" replace state={{ desde: ubicacion.pathname }} />
   }
   if (roles && !roles.includes(usuario.rol)) return <Navigate to="/panel" replace />
   return <Outlet />
