@@ -9,7 +9,11 @@ export const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,
+  // En la nube (serverless) cada instancia abre su propio pool: conviene que sea chico
+  connectionLimit: Number(process.env.DB_CONEXIONES || 10),
+  // Las bases en la nube (TiDB Cloud, Aiven...) exigen conexion cifrada
+  ssl: process.env.DB_SSL === "true" ? { minVersion: "TLSv1.2", rejectUnauthorized: true } : undefined,
+  enableKeepAlive: true,
   // Devolver DECIMAL como number (por defecto mysql2 los devuelve como string)
   decimalNumbers: true,
   // Devolver DATE/DATETIME como texto ("2026-10-12 14:00:00") para evitar
@@ -23,6 +27,12 @@ export const pool = mysql.createPool({
     }
     return next();
   },
+});
+
+// Cada conexion usa la hora de Guatemala (UTC-6, sin horario de verano), asi CURRENT_DATE()
+// y los CURRENT_TIMESTAMP de la base coinciden con la hora del hotel aunque el servidor este en UTC
+pool.pool.on("connection", (conexion) => {
+  conexion.query(`SET time_zone = '${process.env.DB_ZONA_HORARIA || "-06:00"}'`);
 });
 
 // para probar la conexion a la base de datos

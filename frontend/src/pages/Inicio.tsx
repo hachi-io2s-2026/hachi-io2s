@@ -1,6 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { api } from '../api/client'
 import BuscadorEstancia from '../components/BuscadorEstancia'
 import Foto from '../components/Foto'
 import { IconoCalendario, IconoFlecha } from '../components/Iconos'
@@ -19,14 +18,7 @@ const FOTOS = {
   cierre: '/fotos/galeria-3.webp',
 }
 
-// Respuesta de GET /api/servicios (ruta publica del backend)
 type TipoServicio = 'HOSPEDAJE' | 'DAYCARE'
-interface ServicioApi {
-  tipo: TipoServicio
-  tarifa_vigente: { precio: number } | null
-}
-
-const moneda = new Intl.NumberFormat('es-GT', { style: 'currency', currency: 'GTQ' })
 
 // ILUSTRACIONES de las tarjetas de servicios (trazo oscuro + color de acento)
 const trazo = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
@@ -219,27 +211,9 @@ interface Props {
   onIniciarSesion?: () => void
 }
 
+// Los precios no se muestran por ahora (secciones comentadas). Para volver a mostrarlos,
+// recuperar de git la consulta a GET /api/servicios y la funcion precio().
 export default function Inicio({ onIniciarSesion }: Props) {
-  // null = cargando; [] = no se pudo consultar el backend
-  const [servicios, setServicios] = useState<ServicioApi[] | null>(null)
-
-  useEffect(() => {
-    let vigente = true
-    api<ServicioApi[]>('/servicios').then(
-      (datos) => vigente && setServicios(datos),
-      () => vigente && setServicios([]),
-    )
-    return () => {
-      vigente = false
-    }
-  }, [])
-
-  const precio = (tipo: TipoServicio) => {
-    if (servicios === null) return '…'
-    const valor = servicios.find((s) => s.tipo === tipo)?.tarifa_vigente?.precio
-    return valor === undefined ? 'Por confirmar' : moneda.format(valor)
-  }
-
   return (
     <main className="home">
       {/* Portada */}

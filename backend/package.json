@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "crear-admin": "tsx src/scripts/crearAdmin.ts",
+    "inicializar-bd": "tsx src/scripts/inicializarBD.ts",
     "test": "tsx --test tests/*.test.ts"
   },
   "keywords": [],
