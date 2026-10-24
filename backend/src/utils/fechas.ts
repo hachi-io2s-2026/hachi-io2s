@@ -51,12 +51,27 @@ export function rangoDias(desde: string, hasta: string): string[] {
   return dias;
 }
 
-export function hoy(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+// Fecha y hora del hotel. No se usa la zona del servidor porque en la nube suele ser UTC
+// (6 horas adelante de Guatemala).
+export const ZONA_HORARIA = process.env.ZONA_HORARIA || "America/Guatemala";
+
+const formatoLocal = new Intl.DateTimeFormat("en-CA", {
+  timeZone: ZONA_HORARIA,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+});
+
+// "YYYY-MM-DD HH:mm:ss" en la zona del hotel
+export function ahora(): string {
+  const p = Object.fromEntries(formatoLocal.formatToParts(new Date()).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`;
 }
 
-export function ahora(): string {
-  const d = new Date();
-  return `${hoy()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+export function hoy(): string {
+  return ahora().slice(0, 10);
 }
