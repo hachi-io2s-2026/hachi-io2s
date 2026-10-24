@@ -32,3 +32,5 @@ cache/
 
 tmp/
 temp/
+# Vercel (vercel link)
+.vercel/
